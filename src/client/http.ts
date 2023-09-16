@@ -12,3 +12,7 @@ export const get = async (url?: string): Promise<AxiosResponse> => {
 export const getMMI = async (url: string): Promise < AxiosResponse > => {
   return await client.get(`${url}.b`)
 }
+
+export const getSta = async (url: string): Promise < AxiosResponse< ArrayBuffer >> => {
+  return await client.get(`data/${url}.s`, { responseType: 'arraybuffer' })
+}
