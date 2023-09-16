@@ -1,8 +1,7 @@
 import Logger from '../utils/logger'
-import HTTP from './http'
-import type PEWS_Header from '../types/pews_header'
+import * as HTTP from './http'
 
-class PEWS {
+export class PEWS {
   private readonly logger: Logger = new Logger()
   private readonly _phase = 1
   private readonly needSync = true
@@ -16,10 +15,9 @@ class PEWS {
 
   async syncTime (): Promise<void> {
     const res = await HTTP.get('pews2.html')
-    const header = res.headers as PEWS_Header
+    const header = res.headers
 
-    console.log(header)
-    console.log(header.st)
+    const st = header.st as number
   }
 
   get phase (): number {
@@ -36,5 +34,3 @@ class PEWS {
     }
   }
 }
-
-export default PEWS
