@@ -1,13 +1,11 @@
-import Logger from '../utils/logger'
 import * as HTTP from './http'
 
 export class PEWS {
-  private readonly logger: Logger = new Logger()
   private readonly _phase = 1
-  private readonly needSync = true
   private readonly delay = 1000
 
-  private readonly tide: number
+  private tide: number = this.delay
+  private needSync = true
 
   constructor () {
     this.tide = this.delay
@@ -15,9 +13,12 @@ export class PEWS {
 
   async syncTime (): Promise<void> {
     const res = await HTTP.get('pews2.html')
-    const header = res.headers
 
+    const header = res.headers
     const st = header.st as number
+
+    this.tide = new Date().getTime() - st + this.delay
+    this.needSync = false
   }
 
   get phase (): number {
