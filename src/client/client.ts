@@ -35,7 +35,7 @@ export class PEWSClient {
     return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(date.getSeconds())}`
   }
 
-  async syncTime (): Promise<void> {
+  private async syncTime (): Promise<void> {
     const res = await HTTP.get('pews2.html')
 
     const header = res.headers
@@ -47,7 +47,7 @@ export class PEWSClient {
     this.needSync = false
   }
 
-  async getSta (): Promise<any> {
+  private async getSta (): Promise<any> {
     const res = await HTTP.getSta(this.getTimeString())
     const byteArray = res.data
 
