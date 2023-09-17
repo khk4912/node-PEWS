@@ -23,7 +23,7 @@ export const get = async (url?: string): Promise<AxiosResponse> => {
 
 export const getMMI = async (url: string): Promise<AxiosResponse<Uint8Array>> => {
   try {
-    return await client.get(`data/${url}.m`, { responseType: 'arraybuffer' })
+    return await client.get(`data/${url}.b`, { responseType: 'arraybuffer' })
   } catch (err) {
     throw handleError(err, 'getMMI')
   }
