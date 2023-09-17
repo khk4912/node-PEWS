@@ -11,7 +11,6 @@ export class PEWS {
   private needSync = true
 
   private timeSyncIntervalID?: NodeJS.Timeout
-  private readonly mainLoopIntervalID?: NodeJS.Timeout
 
   constructor () {
     this.tide = this.delay
@@ -149,6 +148,5 @@ export class PEWS {
 
   stop (): void {
     clearInterval(this.timeSyncIntervalID)
-    clearInterval(this.mainLoopIntervalID)
   }
 }
