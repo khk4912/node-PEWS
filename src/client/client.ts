@@ -1,18 +1,25 @@
 import { HEADER_LEN, SYNC_PERIOD, TZ_MSEC } from '../model/constant'
-import { type Station } from '../model/eqk_model'
+import { type EEWInfo, type EqkInfo, type Station } from '../model/eqk_model'
 import * as HTTP from './http'
+import { type PEWS } from './pews'
 
 export class PEWSClient {
   private readonly delay = 1000
+  private readonly Wrapper: PEWS
 
   private _phase = 1
   private staList: Station[] = []
   private tide: number = this.delay
   private needSync = true
-
   private timeSyncIntervalID?: NodeJS.Timeout
 
-  constructor () {
+  private stopLoop = false
+
+  // Earthqukae info
+  private readonly eqkInfo?: EEWInfo | EqkInfo
+
+  constructor (wrapper: PEWS) {
+    this.Wrapper = wrapper
     this.tide = this.delay
   }
 
@@ -129,9 +136,12 @@ export class PEWSClient {
         await this.syncTime()
       }
 
+      if (this.stopLoop) {
+        break
+      }
+
       await this.getMMI()
       console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
-
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
@@ -147,6 +157,7 @@ export class PEWSClient {
   }
 
   stop (): void {
+    this.stopLoop = true
     clearInterval(this.timeSyncIntervalID)
   }
 }
