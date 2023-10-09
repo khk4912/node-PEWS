@@ -9,6 +9,8 @@ export class PEWSClient {
   private readonly delay = 1000
   private readonly Wrapper: PEWS
 
+  protected readonly HEADER_LEN = HEADER_LEN
+
   private _phase: Phase = 1
   private _cachedPhase: Phase = 1
 
@@ -116,11 +118,11 @@ export class PEWSClient {
     let header = ''
     let binaryStr = ''
 
-    for (let i = 0; i < HEADER_LEN; i++) {
+    for (let i = 0; i < this.HEADER_LEN; i++) {
       header += byteArray[i].toString(2).padStart(8, '0')
     }
 
-    for (let i = HEADER_LEN; i < byteArray.length; i++) {
+    for (let i = this.HEADER_LEN; i < byteArray.length; i++) {
       binaryStr += byteArray[i].toString(2).padStart(8, '0')
     }
 
@@ -226,7 +228,6 @@ export class PEWSClient {
             this.eqkInfo.location, this.eqkInfo.magnitude, this.eqkInfo.isOffshore,
             this.eqkInfo.maxIntensity, this.eqkInfo.maxIntensityArea, this.eqkInfo.eqkID
           )
-
           if (this._cachedPhase !== 2) {
             this.Wrapper.emitEvent('on_new_eew', eewInfo)
           }
