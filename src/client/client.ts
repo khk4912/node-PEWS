@@ -107,9 +107,9 @@ export class PEWSClient {
       this._phase = 1
     } else if (header.slice(1, 2) === '1' && header.slice(2, 3) === '0') {
       this._phase = 2
-    } else if (header.slice(1, 2) === '0' && header.slice(2, 3) === '1') {
-      this._phase = 3
     } else if (header.slice(1, 2) === '1' && header.slice(2, 3) === '1') {
+      this._phase = 3
+    } else if (header.slice(1, 2) === '0' && header.slice(2, 3) === '1') {
       this._phase = 4
     }
     if (staF || this.staList.length < 99) {
