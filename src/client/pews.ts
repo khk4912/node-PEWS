@@ -19,7 +19,8 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
     void this.PEWSClient.run()
   }
 
-  emitEvent<E extends keyof PEWSEvents>(event: E, args: Parameters<PEWSEvents[E]>): void {
+  emitEvent<E extends keyof PEWSEvents>(event: E, ...args: Parameters<PEWSEvents[E]>): void {
+    console.log(`[PEWS] Emitting event: ${event}`)
     this.emit(event, ...args)
   }
 

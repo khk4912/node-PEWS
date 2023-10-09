@@ -5,7 +5,7 @@ export interface Station {
   mmi?: number
 }
 
-interface EarthquakeInfo {
+export interface EarthquakeInfo {
   lat: number
   lon: number
   time: Date
@@ -14,6 +14,7 @@ interface EarthquakeInfo {
   isOffshore: boolean
   maxIntensity: number
   maxIntensityArea: string[]
+  dep?: number
   eqkID?: number
 }
 
