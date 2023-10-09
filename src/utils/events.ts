@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { type EEWInfo, type EqkInfo } from '../types/model'
+import { type EEWInfo, type EqkInfo } from '../model/eqk_model'
 import { type TypedEventEmitter } from '../types/listener_event'
 
 interface PEWSEvents {

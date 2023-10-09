@@ -1,5 +1,5 @@
 import { HEADER_LEN, SYNC_PERIOD, TZ_MSEC } from '../model/constant'
-import { type Station } from '../types/model'
+import { type Station } from '../model/eqk_model'
 import * as HTTP from './http'
 
 export class PEWSClient {
