@@ -4,10 +4,13 @@ import { HTTPError } from '../utils/error'
 import * as HTTP from './http'
 import { type PEWS } from './pews'
 import { type Phase } from '../types/pews'
+import { Logger, LoggingLevel } from '../utils/logger'
 
 export class PEWSClient {
   private readonly delay = 1000
   private readonly Wrapper: PEWS
+
+  public readonly logger: Logger = new Logger(LoggingLevel.INFO)
 
   protected HEADER_LEN = HEADER_LEN
 
@@ -285,20 +288,24 @@ export class PEWSClient {
 
   async loop (): Promise<void> {
     while (true) {
-      if (this.needSync) {
-        await this.syncTime()
+      try {
+        if (this.needSync) {
+          await this.syncTime()
+        }
+
+        if (this.stopLoop) {
+          break
+        }
+
+        await this.getMMI()
+        this.phaseHandler()
+
+        this.Wrapper.emitEvent('loop')
+        // console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      } catch (err) {
+        this.Wrapper.emitEvent('error', err)
       }
-
-      if (this.stopLoop) {
-        break
-      }
-
-      await this.getMMI()
-      this.phaseHandler()
-
-      this.Wrapper.emitEvent('loop')
-      // console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
-      await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
 

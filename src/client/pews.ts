@@ -1,11 +1,13 @@
 import { SimulationPEWS } from '../sim/sim'
 import { type PEWSEvents, type TypedEventEmitter } from '../types/listener_event'
+import { type Logger } from '../utils/logger'
 
 import { PEWSClient } from './client'
 import EventEmitter from 'events'
 
 export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvents>) {
   private readonly PEWSClient: PEWSClient
+  public readonly logger: Logger
 
   constructor (sim = false, eqkID?: number, startTime?: Date, endTime?: Date) {
     // FIXME: need to remove this eslint-igonre in future
@@ -20,6 +22,8 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
     } else {
       this.PEWSClient = new PEWSClient(this)
     }
+
+    this.logger = this.PEWSClient.logger
   }
 
   start (): void {
