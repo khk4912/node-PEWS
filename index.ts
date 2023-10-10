@@ -1,4 +1,5 @@
 import { PEWS } from './src/client/pews'
+import { LoggingLevel, Logger } from './src/utils/logger'
 
-const pews = new PEWS()
-void pews.run()
+export { LoggingLevel, Logger }
+export default PEWS
