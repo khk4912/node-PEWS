@@ -9,7 +9,7 @@ export class PEWSClient {
   private readonly delay = 1000
   private readonly Wrapper: PEWS
 
-  protected readonly HEADER_LEN = HEADER_LEN
+  protected HEADER_LEN = HEADER_LEN
 
   private _phase: Phase = 1
   private _cachedPhase: Phase = 1
@@ -19,7 +19,8 @@ export class PEWSClient {
   private needSync = true
   private timeSyncIntervalID?: NodeJS.Timeout
 
-  private stopLoop = false
+  // flag to stop loop
+  protected stopLoop = false
 
   // Earthqukae info
   private eqkInfo?: EarthquakeInfo
@@ -33,13 +34,35 @@ export class PEWSClient {
     return this._phase
   }
 
+  private escape (arr: number[]): string {
+    // write function that does exactly same job as escape() in ECMAScript 262
+    let res = ''
+
+    for (const x of arr) {
+      const c = String.fromCharCode(x)
+
+      if (c.match(/[A-Za-z0-9@*_+\-./]/) != null) {
+        res += c
+        continue
+      }
+
+      if (x < 256) {
+        res += '%' + x.toString(16).padStart(2, '0')
+      } else {
+        res += '%u' + x.toString(16).padStart(4, '0')
+      }
+    }
+
+    return res
+  }
+
   private startTimeSyncInterval (): void {
     this.timeSyncIntervalID = setInterval(() => {
       this.needSync = true
     }, SYNC_PERIOD * 1000)
   }
 
-  private getTimeString (): string {
+  protected getTimeString (): string {
     const pad2 = (n: number): string => {
       return n < 10 ? `0${n}` : `${n}`
     }
@@ -68,8 +91,8 @@ export class PEWSClient {
     }
   }
 
-  private async getSta (): Promise<any> {
-    const res = await HTTP.getSta(this.getTimeString())
+  protected async getSta (url?: string): Promise<any> {
+    const res = await HTTP.getSta(url ?? this.getTimeString())
     const byteArray = res.data
 
     let binaryStr = ''
@@ -100,10 +123,10 @@ export class PEWSClient {
     }
   }
 
-  async getMMI (): Promise<any> {
+  protected async getMMI (url?: string): Promise<any> {
     let res
     try {
-      res = await HTTP.getMMI(this.getTimeString())
+      res = await HTTP.getMMI(url ?? this.getTimeString())
     } catch (err) {
       if (err instanceof HTTPError) {
         console.log(err.message)
@@ -168,8 +191,8 @@ export class PEWSClient {
   private async eqkHandler (eqkData: string, infoStrArr: number[]): Promise<void> {
     const lat = 30 + parseInt(eqkData.slice(0, 10), 2) / 100
     const lon = 120 + parseInt(eqkData.slice(10, 20), 2) / 100
-    const mag = parseInt(eqkData.slice(20, 27), 2)
-    const dep = parseInt(eqkData.slice(27, 37), 2)
+    const mag = parseInt(eqkData.slice(20, 27), 2) / 10
+    const dep = parseInt(eqkData.slice(27, 37), 2) / 10
     const time = parseInt(eqkData.slice(37, 69), 2) * 1000
     const eqkID = parseInt('20' + parseInt(eqkData.slice(69, 95), 2))
     const maxIntensity = parseInt(eqkData.slice(95, 99), 2)
@@ -185,8 +208,11 @@ export class PEWSClient {
       }
     }
 
-    const location = String.fromCharCode.apply(null, infoStrArr).trim()
-    const isOffshore = location.includes('해상')
+    // const location = decodeURIComponent(es(String.fromCharCode.apply(null, infoStrArr)))
+    console.log(infoStrArr)
+
+    const location = decodeURIComponent(this.escape(infoStrArr))
+    const isOffshore = location.includes('해역')
 
     this.eqkInfo = {
       lat,
@@ -219,7 +245,7 @@ export class PEWSClient {
   phaseHandler (): void {
     switch (this.phase) {
       case 1:
-        this.Wrapper.emitEvent('on_phase_1')
+        this.Wrapper.emitEvent('phase_1')
         break
 
       case 2:
@@ -229,9 +255,9 @@ export class PEWSClient {
             this.eqkInfo.maxIntensity, this.eqkInfo.maxIntensityArea, this.eqkInfo.eqkID
           )
           if (this._cachedPhase !== 2) {
-            this.Wrapper.emitEvent('on_new_eew', eewInfo)
+            this.Wrapper.emitEvent('new_eew', eewInfo)
           }
-          this.Wrapper.emitEvent('on_phase_2', eewInfo)
+          this.Wrapper.emitEvent('phase_2', eewInfo)
         }
         break
 
@@ -243,15 +269,15 @@ export class PEWSClient {
           )
 
           if (this._cachedPhase !== 3) {
-            this.Wrapper.emitEvent('on_new_info', eqkInfo)
+            this.Wrapper.emitEvent('new_info', eqkInfo)
           }
 
-          this.Wrapper.emitEvent('on_phase_3', eqkInfo)
+          this.Wrapper.emitEvent('phase_3', eqkInfo)
         }
         break
 
       case 4:
-        this.Wrapper.emitEvent('on_phase_4')
+        this.Wrapper.emitEvent('phase_4')
         break
     }
     this._cachedPhase = this.phase
@@ -270,7 +296,8 @@ export class PEWSClient {
       await this.getMMI()
       this.phaseHandler()
 
-      console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
+      this.Wrapper.emitEvent('loop')
+      // console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }

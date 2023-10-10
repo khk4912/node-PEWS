@@ -12,13 +12,12 @@ export interface TypedEventEmitter<Events extends EventType<Events>> {
 
 export interface PEWSEvents {
   new_eew: (data: EEWInfo) => any
-  new_eqk: (data: EqkInfo) => any
-  on_new_eew: (data: EEWInfo) => any
-  on_new_info: (data: EqkInfo) => any
-  on_phase_1: () => any
-  on_phase_2: (data: EEWInfo) => any
-  on_phase_3: (data: EqkInfo) => any
-  on_phase_4: () => any
+  new_info: (data: EqkInfo) => any
+  phase_1: () => any
+  phase_2: (data: EEWInfo) => any
+  phase_3: (data: EqkInfo) => any
+  phase_4: () => any
+  loop: () => any
   error: (err: unknown) => any
 }
 
