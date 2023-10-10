@@ -19,28 +19,9 @@ export interface EarthquakeInfo {
 }
 
 export class EEWInfo implements EarthquakeInfo {
-  public readonly lat: number
-  public readonly lon: number
-  public readonly time: Date
-  public readonly location: string
-  public readonly magnitude: number
-  public readonly isOffshore: boolean
-  public readonly maxIntensity: number
-  public readonly maxIntensityArea: string[]
-  public readonly eqkID?: number
-
   constructor
-  (lat: number, lon: number, time: Date, location: string, magnitude: number,
-    isOffshore: boolean, maxIntensity: number, maxIntensityArea: string[], eqkID?: number) {
-    this.lat = lat
-    this.lon = lon
-    this.time = time
-    this.location = location
-    this.magnitude = magnitude
-    this.isOffshore = isOffshore
-    this.maxIntensity = maxIntensity
-    this.maxIntensityArea = maxIntensityArea
-    this.eqkID = eqkID
+  (public readonly lat: number, public readonly lon: number, public readonly time: Date, public readonly location: string, public readonly magnitude: number,
+    public readonly isOffshore: boolean, public readonly maxIntensity: number, public readonly maxIntensityArea: string[], public readonly eqkID?: number) {
   }
 
   public estimatedIntensityOf (lat: number, lon: number): never {
@@ -56,31 +37,10 @@ export class EEWInfo implements EarthquakeInfo {
 }
 
 export class EqkInfo implements EarthquakeInfo {
-  public readonly lat: number
-  public readonly lon: number
-  public readonly time: Date
-  public readonly location: string
-  public readonly magnitude: number
-  public readonly isOffshore: boolean
-  public readonly maxIntensity: number
-  public readonly maxIntensityArea: string[]
-  public readonly eqkID?: number
-
-  public readonly depth: number
-
   constructor
-  (lat: number, lon: number, time: Date, location: string, magnitude: number,
-    isOffshore: boolean, maxIntensity: number, maxIntensityArea: string[], depth: number, eqkID?: number) {
-    this.lat = lat
-    this.lon = lon
-    this.time = time
-    this.location = location
-    this.magnitude = magnitude
-    this.isOffshore = isOffshore
-    this.maxIntensity = maxIntensity
-    this.maxIntensityArea = maxIntensityArea
-    this.eqkID = eqkID
-    this.depth = depth
+  (public readonly lat: number, public readonly lon: number, public readonly time: Date, public readonly location: string, public readonly magnitude: number,
+    public readonly isOffshore: boolean, public readonly maxIntensity: number, public readonly maxIntensityArea: string[], public readonly depth: number,
+    public readonly eqkID?: number) {
   }
 
   public intensityOf (lat: number, lon: number): never {
