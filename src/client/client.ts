@@ -10,7 +10,7 @@ export class PEWSClient {
   private readonly delay = 1000
   private readonly Wrapper: PEWS
 
-  public readonly logger: Logger = new Logger(LoggingLevel.INFO)
+  public readonly logger: Logger = new Logger(LoggingLevel.NONE)
 
   protected HEADER_LEN = HEADER_LEN
 
@@ -128,11 +128,14 @@ export class PEWSClient {
 
   protected async getMMI (url?: string): Promise<any> {
     let res
+
+    url = url ?? this.getTimeString()
     try {
-      res = await HTTP.getMMI(url ?? this.getTimeString())
+      res = await HTTP.getMMI(url)
+      this.logger.debug(`getMMI: ${url}`)
     } catch (err) {
       if (err instanceof HTTPError) {
-        console.log(err.message)
+        this.logger.warn(`getMMI: failed to get MMI data (${err.status} ${err.message}) `)
         return
       }
 
@@ -304,7 +307,11 @@ export class PEWSClient {
         // console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
         await new Promise(resolve => setTimeout(resolve, 1000))
       } catch (err) {
-        this.Wrapper.emitEvent('error', err)
+        if (err instanceof HTTPError) {
+          this.Wrapper.emitEvent('error', `loop(): error ${err.message}} occured`)
+        } else {
+          throw err
+        }
       }
     }
   }
@@ -313,9 +320,18 @@ export class PEWSClient {
     await this.syncTime()
     this.startTimeSyncInterval()
 
-    await this.getSta()
-    await this.getMMI()
+    // retry until getSta() success
+    while (true) {
+      try {
+        await this.getSta()
+        break
+      } catch (err) {
+        this.Wrapper.emitEvent('error', 'run(): failed to fetch station information. retrying...')
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+    }
 
+    await this.getMMI()
     await this.loop()
   }
 
