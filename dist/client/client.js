@@ -251,8 +251,10 @@ class PEWSClient {
                     const eewInfo = new eqk_model_1.EEWInfo(this.eqkInfo.lat, this.eqkInfo.lon, this.eqkInfo.time, this.eqkInfo.location, this.eqkInfo.magnitude, this.eqkInfo.isOffshore, this.eqkInfo.maxIntensity, this.eqkInfo.maxIntensityArea, this.eqkInfo.eqkID);
                     if (this._cachedPhase !== 2) {
                         this.Wrapper.emitEvent('new_eew', eewInfo);
+                        this.logger.debug('new_eew emitted');
                     }
                     this.Wrapper.emitEvent('phase_2', eewInfo);
+                    this.logger.debug('phase_2 emitted');
                 }
                 break;
             case 3:
@@ -260,8 +262,10 @@ class PEWSClient {
                     const eqkInfo = new eqk_model_1.EqkInfo(this.eqkInfo.lat, this.eqkInfo.lon, this.eqkInfo.time, this.eqkInfo.location, this.eqkInfo.magnitude, this.eqkInfo.isOffshore, this.eqkInfo.maxIntensity, this.eqkInfo.maxIntensityArea, (_a = this.eqkInfo.dep) !== null && _a !== void 0 ? _a : -1, this.eqkInfo.eqkID);
                     if (this._cachedPhase !== 3) {
                         this.Wrapper.emitEvent('new_info', eqkInfo);
+                        this.logger.debug('new_info emitted');
                     }
                     this.Wrapper.emitEvent('phase_3', eqkInfo);
+                    this.logger.debug('phase_3 emitted');
                 }
                 break;
             case 4:

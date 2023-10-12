@@ -259,8 +259,10 @@ export class PEWSClient {
           )
           if (this._cachedPhase !== 2) {
             this.Wrapper.emitEvent('new_eew', eewInfo)
+            this.logger.debug('new_eew emitted')
           }
           this.Wrapper.emitEvent('phase_2', eewInfo)
+          this.logger.debug('phase_2 emitted')
         }
         break
 
@@ -273,9 +275,11 @@ export class PEWSClient {
 
           if (this._cachedPhase !== 3) {
             this.Wrapper.emitEvent('new_info', eqkInfo)
+            this.logger.debug('new_info emitted')
           }
 
           this.Wrapper.emitEvent('phase_3', eqkInfo)
+          this.logger.debug('phase_3 emitted')
         }
         break
 
