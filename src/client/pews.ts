@@ -9,6 +9,14 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
   private readonly PEWSClient: PEWSClient
   public readonly logger: Logger
 
+  /**
+   * PEWS Client
+   *
+   * @param sim 시뮬레이션 여부
+   * @param eqkID 시뮬레이션에 사용할 지진 ID
+   * @param startTime 시뮬레이션 시작 시각
+   * @param endTime 시뮬레이션 종료 시각
+   */
   constructor (sim = false, eqkID?: number, startTime?: Date, endTime?: Date) {
     // FIXME: need to remove this eslint-igonre in future
     // eslint-disable-next-line constructor-super
