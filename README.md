@@ -21,7 +21,7 @@ pews.start()
 ### 제주 지진 시뮬레이션 예시
 
 ```typescript
-import { SimulationData } from "./sim/sim_data"
+import { SimulationData } from "node-pews"
 
 const JEJU = SimulationData.JEJU
 
