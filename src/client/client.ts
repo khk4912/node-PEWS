@@ -214,9 +214,6 @@ export class PEWSClient {
       }
     }
 
-    // const location = decodeURIComponent(es(String.fromCharCode.apply(null, infoStrArr)))
-    console.log(infoStrArr)
-
     const location = decodeURIComponent(this.escape(infoStrArr)).trim()
     const isOffshore = location.includes('해역')
 
