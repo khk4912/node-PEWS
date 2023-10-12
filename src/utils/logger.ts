@@ -1,9 +1,10 @@
 export enum LoggingLevel {
+  NONE = -1,
   ERROR = 0,
   WARN = 1,
   INFO = 2,
-  DEBUG = 3,
-  NONE = 4
+  DEBUG = 3
+
 }
 
 export class Logger {
