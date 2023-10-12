@@ -21,25 +21,25 @@ export class Logger {
 
   error (msg: string): void {
     if (this.loggingLevel >= LoggingLevel.ERROR) {
-      console.log(msg)
+      console.log('[PEWS error]', msg)
     }
   }
 
   warn (msg: string): void {
     if (this.loggingLevel >= LoggingLevel.WARN) {
-      console.log(msg)
+      console.log('[PEWS warn]', msg)
     }
   }
 
   info (msg: string): void {
     if (this.loggingLevel >= LoggingLevel.INFO) {
-      console.log(msg)
+      console.log('[PEWS info]', msg)
     }
   }
 
   debug (msg: string): void {
     if (this.loggingLevel >= LoggingLevel.DEBUG) {
-      console.log(msg)
+      console.log('[PEWS debug]', msg)
     }
   }
 }

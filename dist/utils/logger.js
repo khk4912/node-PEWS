@@ -19,22 +19,22 @@ class Logger {
     }
     error(msg) {
         if (this.loggingLevel >= LoggingLevel.ERROR) {
-            console.log(msg);
+            console.log('[PEWS error]', msg);
         }
     }
     warn(msg) {
         if (this.loggingLevel >= LoggingLevel.WARN) {
-            console.log(msg);
+            console.log('[PEWS warn]', msg);
         }
     }
     info(msg) {
         if (this.loggingLevel >= LoggingLevel.INFO) {
-            console.log(msg);
+            console.log('[PEWS info]', msg);
         }
     }
     debug(msg) {
         if (this.loggingLevel >= LoggingLevel.DEBUG) {
-            console.log(msg);
+            console.log('[PEWS debug]', msg);
         }
     }
 }
