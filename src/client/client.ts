@@ -3,7 +3,7 @@ import { EEWInfo, EqkInfo, type EarthquakeInfo, type Station } from '../model/eq
 import { HTTPError } from '../utils/error'
 import * as HTTP from './http'
 import { type PEWS } from './pews'
-import { type Phase } from '../types/pews'
+import { type LocationInfo, type Phase } from '../types/pews'
 import { Logger, LoggingLevel } from '../utils/logger'
 
 export class PEWSClient {
@@ -173,18 +173,18 @@ export class PEWSClient {
       await this.callback(binaryStr)
     }
 
-    const infoStrArr = []
+    // const infoStrArr = []
 
-    for (let i = byteArray.byteLength - MAX_EQK_STR_LEN; i < byteArray.byteLength; i++) {
-      infoStrArr.push(byteArray[i])
-    }
+    // for (let i = byteArray.byteLength - MAX_EQK_STR_LEN; i < byteArray.byteLength; i++) {
+    //   infoStrArr.push(byteArray[i])
+    // }
 
     const eqkData = binaryStr.slice(0 - (MAX_EQK_STR_LEN * 8 + MAX_EQK_INFO_LEN))
 
     switch (this.phase) {
       case 2:
       case 3:
-        await this.eqkHandler(eqkData, infoStrArr)
+        await this.eqkHandler(eqkData)
         break
       case 4:
         if (this.eqkInfo != null) {
@@ -194,7 +194,12 @@ export class PEWSClient {
     }
   }
 
-  private async eqkHandler (eqkData: string, infoStrArr: number[]): Promise<void> {
+  private async getLocation (eqkID: number, phase: 2 | 3): Promise<LocationInfo> {
+    this.logger.debug(`getLocation: ${eqkID}`)
+    return (await HTTP.getLoc(eqkID, phase)).data
+  }
+
+  private async eqkHandler (eqkData: string, infoStrArr?: number[]): Promise<void> {
     const lat = 30 + parseInt(eqkData.slice(0, 10), 2) / 100
     const lon = 120 + parseInt(eqkData.slice(10, 20), 2) / 100
     const mag = parseInt(eqkData.slice(20, 27), 2) / 10
@@ -203,8 +208,10 @@ export class PEWSClient {
     const eqkID = parseInt('20' + parseInt(eqkData.slice(69, 95), 2))
     const maxIntensity = parseInt(eqkData.slice(95, 99), 2)
     const maxIntensityStr = eqkData.slice(99, 116)
-
     const maxIntensityArea = []
+
+    let location = ''
+    let isOffshore = false
 
     if (maxIntensityStr !== '11111111111111111') {
       for (let i = 0; i < 17; i++) {
@@ -214,8 +221,10 @@ export class PEWSClient {
       }
     }
 
-    const location = decodeURIComponent(this.escape(infoStrArr)).trim()
-    const isOffshore = location.includes('해역')
+    if (this.phase === 2 || this.phase === 3) {
+      location = (await this.getLocation(eqkID, this.phase)).info_ko
+      isOffshore = location.includes('해역')
+    }
 
     this.eqkInfo = {
       lat,
@@ -305,7 +314,6 @@ export class PEWSClient {
         this.phaseHandler()
 
         this.Wrapper.emitEvent('loop')
-        // console.log(`loop: phase=${this.phase}, tide=${this.tide}`)
         await new Promise(resolve => setTimeout(resolve, 1000))
       } catch (err) {
         if (err instanceof HTTPError) {

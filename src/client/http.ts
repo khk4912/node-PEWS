@@ -1,5 +1,6 @@
 import axios, { type AxiosResponse, AxiosError } from 'axios'
 import { HTTPError } from '../utils/error'
+import { type LocationInfo } from '../types/pews'
 
 const client = axios.create({
   baseURL: 'https://www.weather.go.kr/pews/',
@@ -59,5 +60,17 @@ export const getSta = async (url: string): Promise<AxiosResponse<Uint8Array>> =>
     return await client.get(`data/${url}.s`, { responseType: 'arraybuffer' })
   } catch (err) {
     throw handleError(err, 'getSta')
+  }
+}
+
+export const getLoc = async (url: number, phase: 2 | 3): Promise<AxiosResponse<LocationInfo>> => {
+  try {
+    if (phase === 2) {
+      return (await client.get(`data/${url}/${url}.le`))
+    } else {
+      return await client.get(`data/${url}/${url}.li`)
+    }
+  } catch (err) {
+    throw handleError(err, 'getLoc')
   }
 }
