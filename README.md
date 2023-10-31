@@ -2,12 +2,47 @@
 
 대한민국 기상청의 [사용자 맞춤형 지진정보서비스](https://www.weather.go.kr/pews/)의 node.js 클라이언트.
 
+## Installation
+
+node-PEWS를 이용하려면 아래의 단계를 참고하세요.
+
+1. 레포지토리 클론
+
+```bash
+❯ git clone https://github.com/khk4912/node-PEWS.git
+```
+
+2. 의존성 설치
+
+```bash
+❯ npm install
+or
+❯ yarn install
+```
+
+3. TypeScipt 빌드
+
+```bash
+❯ tsc
+```
+
+4. 자신의 프로젝트에 node-PEWS 설치
+
+```bash
+❯ npm install path/to/node-PEWS
+or
+❯ yarn add file://path/to/node-PEWS
+```
+
 ## Example
 
 ### 기본 예시
 
 ```typescript
+// ESM style import
 import PEWS from "node-pews"
+// ... or CommonJS style import
+const PEWS = require("node-pews").default
 
 const pews = new PEWS()
 
@@ -36,6 +71,8 @@ JEJU.on("new_eew", (eew) => {
 
 JEJU.start()
 ```
+
+Ouptut
 
 ```
 ## 새로운 조기경보 발표! ##
