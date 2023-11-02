@@ -75,6 +75,7 @@ export class SimulationPEWS extends PEWSClient {
         break
       } catch (err) {
         this.logger.warn('run(): failed to fetch station information. retrying...')
+        this.Wrapper.emitEvent('error', err)
         await new Promise(resolve => setTimeout(resolve, 500))
       }
     }

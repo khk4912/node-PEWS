@@ -9,7 +9,7 @@ const client = axios.create({
 
 const handleError = (err: unknown, event: string): unknown => {
   if (err instanceof AxiosError) {
-    if (err.code === 'ECONNABORTED') {
+    if (err.code === 'ECONNABORTED' || err.status === 408) {
       return new HTTPError('Request timeout', 408, event)
     }
     if (err.response !== undefined) {
