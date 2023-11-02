@@ -27,6 +27,7 @@ export class PEWSClient {
 
   // Earthqukae info
   private eqkInfo?: EarthquakeInfo
+  private readonly cachedEqkInfo?: EarthquakeInfo
 
   constructor (wrapper: PEWS) {
     this.Wrapper = wrapper
@@ -200,12 +201,18 @@ export class PEWSClient {
   }
 
   private async eqkHandler (eqkData: string, infoStrArr?: number[]): Promise<void> {
+    const eqkID = parseInt('20' + parseInt(eqkData.slice(69, 95), 2))
+
+    if (this.cachedEqkInfo != null && this.cachedEqkInfo.eqkID === eqkID) {
+      return
+    }
+
     const lat = 30 + parseInt(eqkData.slice(0, 10), 2) / 100
     const lon = 120 + parseInt(eqkData.slice(10, 20), 2) / 100
     const mag = parseInt(eqkData.slice(20, 27), 2) / 10
     const dep = parseInt(eqkData.slice(27, 37), 2) / 10
     const time = parseInt(eqkData.slice(37, 69), 2) * 1000
-    const eqkID = parseInt('20' + parseInt(eqkData.slice(69, 95), 2))
+
     const maxIntensity = parseInt(eqkData.slice(95, 99), 2)
     const maxIntensityStr = eqkData.slice(99, 116)
     const maxIntensityArea = []
