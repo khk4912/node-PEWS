@@ -1,44 +1,51 @@
-export enum LoggingLevel {
-  NONE = -1,
-  ERROR = 0,
-  WARN = 1,
-  INFO = 2,
-  DEBUG = 3
+export const LoggingLevel = {
+  NONE: 'none',
+  ERROR: 'error',
+  WARN: 'warn',
+  INFO: 'info',
+  DEBUG: 'debug'
+} as const
 
+const LoggingLevelID = {
+  none: 0,
+  error: 1,
+  warn: 2,
+  info: 3,
+  debug: 4
 }
 
-export class Logger {
-  private loggingLevel: LoggingLevel
-  constructor (loggingLevel: LoggingLevel) {
-    // eslint-disable-next-line constructor-super
+type LoggingLevelType = typeof LoggingLevel[keyof typeof LoggingLevel]
 
-    this.loggingLevel = loggingLevel
+export class Logger {
+  private loggingLevel: typeof LoggingLevelID[keyof typeof LoggingLevelID]
+  constructor (loggingLevel: LoggingLevelType) {
+    this.loggingLevel = LoggingLevelID[loggingLevel]
   }
 
-  setLevel (loggingLevel: LoggingLevel): void {
-    this.loggingLevel = loggingLevel
+  setLevel (loggingLevel: LoggingLevelType = 'none'): void {
+    this.loggingLevel = LoggingLevelID[loggingLevel]
   }
 
   error (msg: string): void {
-    if (this.loggingLevel >= LoggingLevel.ERROR) {
+    if (this.loggingLevel >= LoggingLevelID[LoggingLevel.ERROR]) {
       console.log('[PEWS error]', msg)
     }
   }
 
   warn (msg: string): void {
-    if (this.loggingLevel >= LoggingLevel.WARN) {
+    if (this.loggingLevel >= LoggingLevelID[LoggingLevel.WARN]) {
       console.log('[PEWS warn]', msg)
     }
   }
 
   info (msg: string): void {
-    if (this.loggingLevel >= LoggingLevel.INFO) {
+    if (this.loggingLevel >= LoggingLevelID[LoggingLevel.INFO]) {
       console.log('[PEWS info]', msg)
     }
   }
 
   debug (msg: string): void {
-    if (this.loggingLevel >= LoggingLevel.DEBUG) {
+    if (this.loggingLevel >= LoggingLevelID[LoggingLevel.DEBUG]) {
       console.log('[PEWS debug]', msg)
     }
   }

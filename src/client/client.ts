@@ -4,13 +4,13 @@ import { HTTPError } from '../utils/error'
 import * as HTTP from './http'
 import { type PEWS } from './pews'
 import { type LocationInfo, type Phase } from '../types/pews'
-import { Logger, LoggingLevel } from '../utils/logger'
+import { Logger } from '../utils/logger'
 
 export class PEWSClient {
   private readonly delay = 1000
   private readonly Wrapper: PEWS
 
-  public readonly logger: Logger = new Logger(LoggingLevel.NONE)
+  public readonly logger: Logger = new Logger()
 
   protected HEADER_LEN = HEADER_LEN
 
