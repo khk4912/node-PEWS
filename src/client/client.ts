@@ -8,7 +8,7 @@ import { Logger } from '../utils/logger'
 
 export class PEWSClient {
   private readonly delay = 1000
-  private readonly Wrapper: PEWS
+  protected readonly Wrapper: PEWS
 
   public readonly logger: Logger = new Logger()
 
@@ -324,7 +324,8 @@ export class PEWSClient {
         await new Promise(resolve => setTimeout(resolve, 1000))
       } catch (err) {
         if (err instanceof HTTPError) {
-          this.Wrapper.emitEvent('error', `loop(): error ${err.message}} occured`)
+          this.logger.warn(`loop(): ${err.message}`)
+          this.Wrapper.emitEvent('error', err)
         } else {
           throw err
         }
@@ -342,12 +343,11 @@ export class PEWSClient {
         await this.getSta()
         break
       } catch (err) {
-        this.Wrapper.emitEvent('error', 'run(): failed to fetch station information. retrying...')
+        this.logger.warn('run(): failed to fetch station information. retrying...')
         await new Promise(resolve => setTimeout(resolve, 500))
       }
     }
 
-    await this.getMMI()
     await this.loop()
   }
 
