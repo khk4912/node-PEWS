@@ -18,11 +18,11 @@ type LoggingLevelType = typeof LoggingLevel[keyof typeof LoggingLevel]
 
 export class Logger {
   private loggingLevel: typeof LoggingLevelID[keyof typeof LoggingLevelID]
-  constructor (loggingLevel: LoggingLevelType) {
+  constructor (loggingLevel: LoggingLevelType = 'none') {
     this.loggingLevel = LoggingLevelID[loggingLevel]
   }
 
-  setLevel (loggingLevel: LoggingLevelType = 'none'): void {
+  setLevel (loggingLevel: LoggingLevelType): void {
     this.loggingLevel = LoggingLevelID[loggingLevel]
   }
 
