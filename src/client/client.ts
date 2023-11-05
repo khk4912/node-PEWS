@@ -145,27 +145,29 @@ export class PEWSClient {
 
     const byteArray = res.data
 
-    let header = ''
-    let binaryStr = ''
+    const staF = (byteArray[0] >> 7) === 1
+    const phaseHeader = byteArray[0] << 1 >> 6
 
-    for (let i = 0; i < this.HEADER_LEN; i++) {
-      header += byteArray[i].toString(2).padStart(8, '0')
-    }
+    let binaryStr = ''
 
     for (let i = this.HEADER_LEN; i < byteArray.length; i++) {
       binaryStr += byteArray[i].toString(2).padStart(8, '0')
     }
 
-    const staF = header.slice(0, 1) === '1'
+    switch (phaseHeader) {
+      case 0:
+        this._phase = 1
+        break
 
-    if (header.slice(1, 2) === '0' && header.slice(2, 3) === '0') {
-      this._phase = 1
-    } else if (header.slice(1, 2) === '1' && header.slice(2, 3) === '0') {
-      this._phase = 2
-    } else if (header.slice(1, 2) === '1' && header.slice(2, 3) === '1') {
-      this._phase = 3
-    } else if (header.slice(1, 2) === '0' && header.slice(2, 3) === '1') {
-      this._phase = 4
+      case 1:
+        this._phase = 4
+        break
+      case 2:
+        this._phase = 2
+        break
+      case 3:
+        this._phase = 3
+        break
     }
 
     if (staF || this.staList.length < 99) {
