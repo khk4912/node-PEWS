@@ -88,7 +88,7 @@ export class PEWSClient {
   }
 
   private async callback (data: Uint8Array): Promise<void> {
-    const mmiObj = await this.bitwiseMMIBinStrHandler(data)
+    const mmiObj = await this.mmiBinStrHandler(data)
 
     for (let i = 0; i < this.staList.length; i++) {
       this.staList[i].mmi = mmiObj[i]
@@ -99,10 +99,10 @@ export class PEWSClient {
     const res = await HTTP.getSta(url ?? this.getTimeString())
     const byteArray = res.data
 
-    await this.bitwiseStaBinHandler(byteArray)
+    await this.staBinHandler(byteArray)
   }
 
-  private async bitwiseStaBinHandler (byteArray: Uint8Array): Promise<void> {
+  private async staBinHandler (byteArray: Uint8Array): Promise<void> {
     const newStaList: Station[] = []
     const staLatArr: number[] = []
     const staLonArr: number[] = []
@@ -158,7 +158,6 @@ export class PEWSClient {
     const staF = (byteArray[0] >> 7) === 1
     const phaseHeader = byteArray[0] << 1 >> 6
 
-    const binaryStr = ''
     const binDataBits = byteArray.slice(this.HEADER_LEN, byteArray.length)
 
     switch (phaseHeader) {
@@ -182,7 +181,6 @@ export class PEWSClient {
       await this.callback(binDataBits)
     }
 
-    const eqkData = binaryStr.slice(0 - (MAX_EQK_STR_LEN * 8 + MAX_EQK_INFO_LEN))
     const bitEqkData = binDataBits.slice(-75)
 
     switch (this.phase) {
@@ -192,7 +190,13 @@ export class PEWSClient {
         break
       case 4:
         if (this.eqkInfo != null) {
-          this.eqkInfo.eqkID = parseInt('20' + parseInt(eqkData.slice(69, 95), 2))
+          this.eqkInfo.eqkID =
+            (
+              (bitEqkData[8] & 0b111) << 23 |
+              (bitEqkData[9] << 15) |
+              (bitEqkData[10] << 7) |
+              (bitEqkData[11] >> 1)
+            ) + 2000000000
         }
         break
     }
@@ -274,7 +278,7 @@ export class PEWSClient {
     }
   }
 
-  private async bitwiseMMIBinStrHandler (data: Uint8Array): Promise<number[]> {
+  private async mmiBinStrHandler (data: Uint8Array): Promise<number[]> {
     const mmiArr: number[] = []
 
     for (const i of data) {
