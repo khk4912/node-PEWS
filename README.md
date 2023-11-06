@@ -2,6 +2,19 @@
 
 대한민국 기상청의 [사용자 맞춤형 지진정보서비스](https://www.weather.go.kr/pews/)의 node.js 클라이언트.
 
+- Supported Features
+
+  - 지진조기경보 (phase 2) 수신
+  - 지진정보 (phase 3) 수신
+  - 제주, 포항, 경주 지진 시뮬레이션
+
+- TODO
+  - 특정 지점 예상도달 시간 / 에상진도 (getGrid())
+  - Station 정보
+  - Station MMI II 이상 시 발생 event
+  - 다중지진 대응...?
+  - 캐싱...?
+
 ## Installation
 
 node-PEWS를 이용하려면 아래의 단계를 참고하세요.
