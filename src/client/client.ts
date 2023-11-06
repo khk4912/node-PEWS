@@ -87,36 +87,46 @@ export class PEWSClient {
     this.needSync = false
   }
 
-  private async callback (data: string): Promise<void> {
-    const mmiObj = await this.mmiBinStrHandler(data)
+  private async callback (data: Uint8Array): Promise<void> {
+    const mmiObj = await this.bitwiseMMIBinStrHandler(data)
 
     for (let i = 0; i < this.staList.length; i++) {
       this.staList[i].mmi = mmiObj[i]
     }
   }
 
-  protected async getSta (url?: string): Promise<any> {
+  protected async getSta (url?: string): Promise<void> {
     const res = await HTTP.getSta(url ?? this.getTimeString())
     const byteArray = res.data
 
-    let binaryStr = ''
-
-    for (const i of byteArray) {
-      binaryStr += i.toString(2).padStart(8, '0')
-    }
-
-    await this.staBinStrHandler(binaryStr)
+    await this.bitwiseStaBinHandler(byteArray)
   }
 
-  private async staBinStrHandler (bianryStr: string): Promise<void> {
+  private async bitwiseStaBinHandler (byteArray: Uint8Array): Promise<void> {
     const newStaList: Station[] = []
     const staLatArr: number[] = []
     const staLonArr: number[] = []
 
-    for (let i = 0; i < bianryStr.length; i += 20) {
-      staLatArr.push(30 + parseInt(bianryStr.slice(i, i + 10), 2) / 100)
-      staLonArr.push(120 + parseInt(bianryStr.slice(i + 10, i + 20), 2) / 100)
+    const temp: number[] = []
+
+    for (const i of byteArray) {
+      const x = i >> 4
+      const y = i & 0b1111
+      temp.push(x, y)
     }
+
+    for (let i = 0; i < temp.length; i += 5) {
+      let x = 0
+      for (let j = 0; j < 5; j++) {
+        x |= temp[i + j]
+        x <<= 4
+      }
+      x >>= 4
+
+      staLatArr.push((30 + (x >> 10) / 100))
+      staLonArr.push((120 + (x & 0b1111111111) / 100))
+    }
+
     for (let i = 0; i < staLatArr.length; i++) {
       const station: Station = { idx: i, lat: staLatArr[i], lon: staLonArr[i], mmi: -1 }
       newStaList.push(station)
@@ -129,8 +139,8 @@ export class PEWSClient {
 
   protected async getMMI (url?: string): Promise<any> {
     let res
-
     url = url ?? this.getTimeString()
+
     try {
       res = await HTTP.getMMI(url)
       this.logger.debug(`getMMI: ${url}`)
@@ -148,17 +158,13 @@ export class PEWSClient {
     const staF = (byteArray[0] >> 7) === 1
     const phaseHeader = byteArray[0] << 1 >> 6
 
-    let binaryStr = ''
-
-    for (let i = this.HEADER_LEN; i < byteArray.length; i++) {
-      binaryStr += byteArray[i].toString(2).padStart(8, '0')
-    }
+    const binaryStr = ''
+    const binDataBits = byteArray.slice(this.HEADER_LEN, byteArray.length)
 
     switch (phaseHeader) {
       case 0:
         this._phase = 1
         break
-
       case 1:
         this._phase = 4
         break
@@ -173,21 +179,16 @@ export class PEWSClient {
     if (staF || this.staList.length < 99) {
       await this.getSta()
     } else {
-      await this.callback(binaryStr)
+      await this.callback(binDataBits)
     }
 
-    // const infoStrArr = []
-
-    // for (let i = byteArray.byteLength - MAX_EQK_STR_LEN; i < byteArray.byteLength; i++) {
-    //   infoStrArr.push(byteArray[i])
-    // }
-
     const eqkData = binaryStr.slice(0 - (MAX_EQK_STR_LEN * 8 + MAX_EQK_INFO_LEN))
+    const bitEqkData = binDataBits.slice(-75)
 
     switch (this.phase) {
       case 2:
       case 3:
-        await this.eqkHandler(eqkData)
+        await this.eqkHandler(bitEqkData)
         break
       case 4:
         if (this.eqkInfo != null) {
@@ -202,33 +203,57 @@ export class PEWSClient {
     return (await HTTP.getLoc(eqkID, phase)).data
   }
 
-  private async eqkHandler (eqkData: string, infoStrArr?: number[]): Promise<void> {
-    const eqkID = parseInt('20' + parseInt(eqkData.slice(69, 95), 2))
+  private async eqkHandler (eqkData: Uint8Array): Promise<void> {
+    // bit 0~9: latitude
+    const lat = 30 + ((eqkData[0] << 2) | (eqkData[1] >> 6)) / 100
 
-    if (this.cachedEqkInfo != null && this.cachedEqkInfo.eqkID === eqkID) {
-      return
-    }
+    // bit 10~19: longitude
+    const lon = 124 + ((eqkData[1] & 0b111111) << 4 |
+                       (eqkData[2] >> 4)) / 100
 
-    const lat = 30 + parseInt(eqkData.slice(0, 10), 2) / 100
-    const lon = 120 + parseInt(eqkData.slice(10, 20), 2) / 100
-    const mag = parseInt(eqkData.slice(20, 27), 2) / 10
-    const dep = parseInt(eqkData.slice(27, 37), 2) / 10
-    const time = parseInt(eqkData.slice(37, 69), 2) * 1000
+    // bit 20~26: magnitude
+    const mag = (((eqkData[2] & 0b1111) << 3) |
+                  (eqkData[3] >> 5)) / 10
 
-    const maxIntensity = parseInt(eqkData.slice(95, 99), 2)
-    const maxIntensityStr = eqkData.slice(99, 116)
+    // bit 27~36: depth
+    const dep = (((eqkData[3] & 0b11111) << 5) |
+                  (eqkData[4] >> 3)) / 10
+
+    // bit 37~68: time
+    const time = (
+      ((eqkData[4] & 0b111) << 29) |
+      (eqkData[5] << 21) |
+      (eqkData[6] << 13) |
+      (eqkData[7] << 5) |
+      (eqkData[8] >> 3)
+    ) * 1000
+
+    // bit 69~94: eqkID
+    const eqkID = ((eqkData[8] & 0b111) << 23 |
+                  (eqkData[9] << 15) |
+                  (eqkData[10] << 7) |
+                  (eqkData[11] >> 1)) +
+                  2000000000
+
+    // bit 95~98: max intensity
+    const maxIntensity = (eqkData[11] & 0b1) << 3 | eqkData[12] >> 5
+
+    // bit 99~116: max intensity area
+    const maxIntensityAreaBits = (eqkData[12] & 0b11111) << 13 |
+                                  eqkData[13] << 5 |
+                                  eqkData[14] >> 3
     const maxIntensityArea = []
 
-    let location = ''
-    let isOffshore = false
-
-    if (maxIntensityStr !== '11111111111111111') {
+    if (maxIntensityAreaBits !== 0x1FFFF) {
       for (let i = 0; i < 17; i++) {
-        if (maxIntensityStr[i] === '1') {
+        if ((maxIntensityAreaBits & (1 << (17 - i))) !== 0) {
           maxIntensityArea.push(REGIONS[i])
         }
       }
     }
+
+    let location = ''
+    let isOffshore = false
 
     if (this.phase === 2 || this.phase === 3) {
       location = (await this.getLocation(eqkID, this.phase)).info_ko
@@ -249,15 +274,12 @@ export class PEWSClient {
     }
   }
 
-  private async mmiBinStrHandler (binaryStr: string): Promise<number[]> {
+  private async bitwiseMMIBinStrHandler (data: Uint8Array): Promise<number[]> {
     const mmiArr: number[] = []
 
-    for (let i = 0; i < binaryStr.length; i += 4) {
-      mmiArr.push(parseInt(binaryStr.slice(i, i + 4), 2))
-    }
-
-    for (let i = 0; i < this.staList.length; i++) {
-      this.staList[i].mmi = mmiArr[i]
+    for (const i of data) {
+      mmiArr.push(i >> 4)
+      mmiArr.push(i & 0b1111)
     }
 
     return mmiArr
