@@ -15,7 +15,11 @@ export function event (eventName?: keyof PEWSEvents) {
       throw new Error(`Event name ${eventName} is not valid!`)
     }
 
-    target.on(eventName, descriptor.value)
-    console.log(target.logger)
+    const t = target as any
+
+    if (t.__decoratedEvents === undefined) {
+      t.__decoratedEvents = {}
+    }
+    t.__decoratedEvents[eventName] = descriptor.value
   }
 }

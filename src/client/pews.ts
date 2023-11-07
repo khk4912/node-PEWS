@@ -32,6 +32,16 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
     }
 
     this.logger = this.PEWSClient.logger
+
+    const self = this as any
+
+    if (self.__decoratedEvents !== undefined) {
+      for (const event in self.__decoratedEvents) {
+        this.on(event as keyof PEWSEvents, self.__decoratedEvents[event])
+      }
+
+      delete self.__decoratedEvents
+    }
   }
 
   start (): void {
@@ -39,7 +49,6 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
   }
 
   emitEvent<E extends keyof PEWSEvents>(event: E, ...args: Parameters<PEWSEvents[E]>): void {
-    // console.log(event, args)
     this.emit(event, ...args)
   }
 
