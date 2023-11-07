@@ -21,4 +21,15 @@ export interface PEWSEvents {
   error: (err: unknown) => any
 }
 
+export const PEWSEventList: Array<keyof PEWSEvents> = [
+  'new_eew',
+  'new_info',
+  'phase_1',
+  'phase_2',
+  'phase_3',
+  'phase_4',
+  'loop',
+  'error'
+]
+
 export type EventType<T> = Record<keyof T, (...args: any[]) => any>
