@@ -1,4 +1,4 @@
-import { HEADER_LEN, MAX_EQK_INFO_LEN, MAX_EQK_STR_LEN, REGIONS, SYNC_PERIOD, TZ_MSEC } from '../model/constant'
+import { HEADER_LEN, REGIONS, SYNC_PERIOD, TZ_MSEC } from '../model/constant'
 import { EEWInfo, EqkInfo, type EarthquakeInfo, type Station } from '../model/eqk_model'
 import { HTTPError } from '../utils/error'
 import * as HTTP from './http'
