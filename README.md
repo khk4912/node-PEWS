@@ -66,6 +66,31 @@ pews.on("new_eew", (eew) => {
 pews.start()
 ```
 
+### 데코레이터 예시
+
+```typescript
+import { PEWS, event, type EEWInfo, type EqkInfo } from "node-pews"
+
+class MyTest extends PEWS {
+  // event 데코레이터에 이벤트 이름을 지정하거나...
+  @event("new_eew")
+  randomName(data: EEWInfo): void {
+    console.log("new_eew 이벤트!")
+    console.log(data)
+  }
+
+  // 메소드 이름을 이벤트 이름으로 사용해도 됩니다.
+  @event()
+  new_info(data: EqkInfo): void {
+    console.log("new_info 이벤트!")
+    console.log(data)
+  }
+}
+
+const test = new MyTest()
+test.start()
+```
+
 ### 제주 지진 시뮬레이션 예시
 
 ```typescript
@@ -87,7 +112,7 @@ JEJU.on("new_eew", (eew) => {
 JEJU.start()
 ```
 
-Ouptut
+Output
 
 ```
 ## 새로운 조기경보 발표! ##
