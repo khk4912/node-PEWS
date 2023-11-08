@@ -1,7 +1,7 @@
 {
   "name": "node-pews",
   "version": "0.1.0",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "author": "khk4912",
   "license": "MIT",
   "devDependencies": {
