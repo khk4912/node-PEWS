@@ -53,10 +53,9 @@ or
 ### 기본 예시
 
 ```typescript
-// ESM style import
-import PEWS from "node-pews"
-// ... or CommonJS style import
-const PEWS = require("node-pews").default
+import { PEWS } from "node-pews"
+// or
+// const { PEWS } = require("node-pews")
 
 const pews = new PEWS()
 
@@ -71,6 +70,8 @@ pews.start()
 
 ```typescript
 import { SimulationData } from "node-pews"
+// or
+// const { SimulationData } = require("node-pews")
 
 const JEJU = SimulationData.JEJU
 
