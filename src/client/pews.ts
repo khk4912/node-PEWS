@@ -3,7 +3,7 @@ import { type PEWSEvents, type TypedEventEmitter } from '../types/listener_event
 import { type Logger } from '../utils/logger'
 
 import { PEWSClient } from './client'
-import EventEmitter from 'events'
+import { EventEmitter } from 'events'
 
 export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvents>) {
   private readonly PEWSClient: PEWSClient
