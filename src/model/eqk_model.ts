@@ -32,10 +32,17 @@ export class EEWInfo implements EarthquakeInfo {
    * @param maxIntensityArea 최대 진도가 예상되는 지역
    * @param eqkID 이벤트 ID
    */
-  constructor
-  (public readonly lat: number, public readonly lon: number, public readonly time: Date, public readonly location: string, public readonly magnitude: number,
-    public readonly isOffshore: boolean, public readonly maxIntensity: number, public readonly maxIntensityArea: string[], public readonly eqkID?: number) {
-  }
+  constructor(
+    public readonly lat: number,
+    public readonly lon: number,
+    public readonly time: Date,
+    public readonly location: string,
+    public readonly magnitude: number,
+    public readonly isOffshore: boolean,
+    public readonly maxIntensity: number,
+    public readonly maxIntensityArea: string[],
+    public readonly eqkID?: number,
+  ) {}
 
   /**
    * 입력한 위·경도의 추정진도를 반환합니다.
@@ -45,7 +52,7 @@ export class EEWInfo implements EarthquakeInfo {
    *
    * @returns 해당하는 위·경도의 추정진도
    */
-  public estimatedIntensityOf (lat: number, lon: number): never {
+  public estimatedIntensityOf(lat: number, lon: number): never {
     throw new Error('Method not implemented.')
   }
 
@@ -57,7 +64,7 @@ export class EEWInfo implements EarthquakeInfo {
    *
    * @returns 해당하는 위·경도의 S파의 예상도달시각
    */
-  public estimatedArrivalTimeOf (lat: number, lon: number): never {
+  public estimatedArrivalTimeOf(lat: number, lon: number): never {
     // const distance = Math.sqrt(((this.lat - lat) * 111) ** 2 + ((this.lon - lon) * 88) ** 2) / 3
     // const arrivalTime = new Date(this.time.getTime() + distance * 1000 / 3.0)
     // return arrivalTime
@@ -80,11 +87,18 @@ export class EqkInfo implements EarthquakeInfo {
    * @param depth 진원 깊이
    * @param eqkID 이벤트 ID
    */
-  constructor
-  (public readonly lat: number, public readonly lon: number, public readonly time: Date, public readonly location: string, public readonly magnitude: number,
-    public readonly isOffshore: boolean, public readonly maxIntensity: number, public readonly maxIntensityArea: string[], public readonly depth: number,
-    public readonly eqkID?: number) {
-  }
+  constructor(
+    public readonly lat: number,
+    public readonly lon: number,
+    public readonly time: Date,
+    public readonly location: string,
+    public readonly magnitude: number,
+    public readonly isOffshore: boolean,
+    public readonly maxIntensity: number,
+    public readonly maxIntensityArea: string[],
+    public readonly depth: number,
+    public readonly eqkID?: number,
+  ) {}
 
   /**
    * 입력한 위·경도에서 관측된 진도를 반환합니다.
@@ -94,7 +108,7 @@ export class EqkInfo implements EarthquakeInfo {
    *
    * @returns 해당하는 위·경도의 관측진도
    */
-  public intensityOf (lat: number, lon: number): never {
+  public intensityOf(lat: number, lon: number): never {
     throw new Error('Method not implemented.')
   }
 }

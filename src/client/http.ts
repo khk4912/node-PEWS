@@ -4,7 +4,7 @@ import { type LocationInfo } from '../types/pews'
 
 const client = axios.create({
   baseURL: 'https://www.weather.go.kr/pews/',
-  timeout: 1000
+  timeout: 1000,
 })
 
 const handleError = (err: unknown, event: string): unknown => {
@@ -41,7 +41,9 @@ export const get = async (url?: string): Promise<AxiosResponse> => {
  * @param url 요청할 URL.
  * @returns AxiosResponse 객체
  */
-export const getMMI = async (url: string): Promise<AxiosResponse<Uint8Array>> => {
+export const getMMI = async (
+  url: string,
+): Promise<AxiosResponse<Uint8Array>> => {
   try {
     return await client.get(`data/${url}.b`, { responseType: 'arraybuffer' })
   } catch (err) {
@@ -55,7 +57,9 @@ export const getMMI = async (url: string): Promise<AxiosResponse<Uint8Array>> =>
  * @param url 요청할 URL.
  * @returns AxiosResponse 객체.
  */
-export const getSta = async (url: string): Promise<AxiosResponse<Uint8Array>> => {
+export const getSta = async (
+  url: string,
+): Promise<AxiosResponse<Uint8Array>> => {
   try {
     return await client.get(`data/${url}.s`, { responseType: 'arraybuffer' })
   } catch (err) {
@@ -63,10 +67,13 @@ export const getSta = async (url: string): Promise<AxiosResponse<Uint8Array>> =>
   }
 }
 
-export const getLoc = async (url: number, phase: 2 | 3): Promise<AxiosResponse<LocationInfo>> => {
+export const getLoc = async (
+  url: number,
+  phase: 2 | 3,
+): Promise<AxiosResponse<LocationInfo>> => {
   try {
     if (phase === 2) {
-      return (await client.get(`data/${url}/${url}.le`))
+      return await client.get(`data/${url}/${url}.le`)
     } else {
       return await client.get(`data/${url}/${url}.li`)
     }

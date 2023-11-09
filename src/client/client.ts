@@ -1,5 +1,10 @@
 import { HEADER_LEN, REGIONS, SYNC_PERIOD, TZ_MSEC } from '../model/constant'
-import { EEWInfo, EqkInfo, type EarthquakeInfo, type Station } from '../model/eqk_model'
+import {
+  EEWInfo,
+  EqkInfo,
+  type EarthquakeInfo,
+  type Station,
+} from '../model/eqk_model'
 import { HTTPError } from '../utils/error'
 import * as HTTP from './http'
 import { type PEWS } from './pews'
@@ -29,16 +34,16 @@ export class PEWSClient {
   private eqkInfo?: EarthquakeInfo
   private readonly cachedEqkInfo?: EarthquakeInfo
 
-  constructor (wrapper: PEWS) {
+  constructor(wrapper: PEWS) {
     this.Wrapper = wrapper
     this.tide = this.delay
   }
 
-  get phase (): Phase {
+  get phase(): Phase {
     return this._phase
   }
 
-  private escape (arr: number[]): string {
+  private escape(arr: number[]): string {
     // write function that does exactly same job as escape() in ECMAScript 262
     let res = ''
 
@@ -60,22 +65,26 @@ export class PEWSClient {
     return res
   }
 
-  private startTimeSyncInterval (): void {
+  private startTimeSyncInterval(): void {
     this.timeSyncIntervalID = setInterval(() => {
       this.needSync = true
     }, SYNC_PERIOD * 1000)
   }
 
-  protected getTimeString (): string {
+  protected getTimeString(): string {
     const pad2 = (n: number): string => {
       return n < 10 ? `0${n}` : `${n}`
     }
 
     const date = new Date(new Date().getTime() - this.tide - TZ_MSEC)
-    return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(date.getSeconds())}`
+    return `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(
+      date.getDate(),
+    )}${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(
+      date.getSeconds(),
+    )}`
   }
 
-  private async syncTime (): Promise<void> {
+  private async syncTime(): Promise<void> {
     const res = await HTTP.get('pews2.html')
 
     const header = res.headers
@@ -87,7 +96,7 @@ export class PEWSClient {
     this.needSync = false
   }
 
-  private async callback (data: Uint8Array): Promise<void> {
+  private async callback(data: Uint8Array): Promise<void> {
     const mmiObj = await this.mmiBinStrHandler(data)
 
     for (let i = 0; i < this.staList.length; i++) {
@@ -95,14 +104,14 @@ export class PEWSClient {
     }
   }
 
-  protected async getSta (url?: string): Promise<void> {
+  protected async getSta(url?: string): Promise<void> {
     const res = await HTTP.getSta(url ?? this.getTimeString())
     const byteArray = res.data
 
     await this.staBinHandler(byteArray)
   }
 
-  private async staBinHandler (byteArray: Uint8Array): Promise<void> {
+  private async staBinHandler(byteArray: Uint8Array): Promise<void> {
     const newStaList: Station[] = []
     const staLatArr: number[] = []
     const staLonArr: number[] = []
@@ -123,12 +132,17 @@ export class PEWSClient {
       }
       x >>= 4
 
-      staLatArr.push((30 + (x >> 10) / 100))
-      staLonArr.push((120 + (x & 0b1111111111) / 100))
+      staLatArr.push(30 + (x >> 10) / 100)
+      staLonArr.push(120 + (x & 0b1111111111) / 100)
     }
 
     for (let i = 0; i < staLatArr.length; i++) {
-      const station: Station = { idx: i, lat: staLatArr[i], lon: staLonArr[i], mmi: -1 }
+      const station: Station = {
+        idx: i,
+        lat: staLatArr[i],
+        lon: staLonArr[i],
+        mmi: -1,
+      }
       newStaList.push(station)
     }
 
@@ -137,7 +151,7 @@ export class PEWSClient {
     }
   }
 
-  protected async getMMI (url?: string): Promise<any> {
+  protected async getMMI(url?: string): Promise<any> {
     let res
     url = url ?? this.getTimeString()
 
@@ -146,7 +160,9 @@ export class PEWSClient {
       this.logger.debug(`getMMI: ${url}`)
     } catch (err) {
       if (err instanceof HTTPError) {
-        this.logger.warn(`getMMI: failed to get MMI data (${err.status} ${err.message}) `)
+        this.logger.warn(
+          `getMMI: failed to get MMI data (${err.status} ${err.message}) `,
+        )
         return
       }
 
@@ -155,8 +171,8 @@ export class PEWSClient {
 
     const byteArray = res.data
 
-    const staF = (byteArray[0] >> 7) === 1
-    const phaseHeader = byteArray[0] << 1 >> 6
+    const staF = byteArray[0] >> 7 === 1
+    const phaseHeader = (byteArray[0] << 1) >> 6
 
     const binDataBits = byteArray.slice(this.HEADER_LEN, byteArray.length)
 
@@ -191,64 +207,63 @@ export class PEWSClient {
       case 4:
         if (this.eqkInfo != null) {
           this.eqkInfo.eqkID =
-            (
-              (bitEqkData[8] & 0b111) << 23 |
+            (((bitEqkData[8] & 0b111) << 23) |
               (bitEqkData[9] << 15) |
               (bitEqkData[10] << 7) |
-              (bitEqkData[11] >> 1)
-            ) + 2000000000
+              (bitEqkData[11] >> 1)) +
+            2000000000
         }
         break
     }
   }
 
-  private async getLocation (eqkID: number, phase: 2 | 3): Promise<LocationInfo> {
+  private async getLocation(
+    eqkID: number,
+    phase: 2 | 3,
+  ): Promise<LocationInfo> {
     this.logger.debug(`getLocation: ${eqkID}`)
     return (await HTTP.getLoc(eqkID, phase)).data
   }
 
-  private async eqkHandler (eqkData: Uint8Array): Promise<void> {
+  private async eqkHandler(eqkData: Uint8Array): Promise<void> {
     // bit 0~9: latitude
     const lat = 30 + ((eqkData[0] << 2) | (eqkData[1] >> 6)) / 100
 
     // bit 10~19: longitude
-    const lon = 124 + ((eqkData[1] & 0b111111) << 4 |
-                       (eqkData[2] >> 4)) / 100
+    const lon = 124 + (((eqkData[1] & 0b111111) << 4) | (eqkData[2] >> 4)) / 100
 
     // bit 20~26: magnitude
-    const mag = (((eqkData[2] & 0b1111) << 3) |
-                  (eqkData[3] >> 5)) / 10
+    const mag = (((eqkData[2] & 0b1111) << 3) | (eqkData[3] >> 5)) / 10
 
     // bit 27~36: depth
-    const dep = (((eqkData[3] & 0b11111) << 5) |
-                  (eqkData[4] >> 3)) / 10
+    const dep = (((eqkData[3] & 0b11111) << 5) | (eqkData[4] >> 3)) / 10
 
     // bit 37~68: time
-    const time = (
-      ((eqkData[4] & 0b111) << 29) |
-      (eqkData[5] << 21) |
-      (eqkData[6] << 13) |
-      (eqkData[7] << 5) |
-      (eqkData[8] >> 3)
-    ) * 1000
+    const time =
+      (((eqkData[4] & 0b111) << 29) |
+        (eqkData[5] << 21) |
+        (eqkData[6] << 13) |
+        (eqkData[7] << 5) |
+        (eqkData[8] >> 3)) *
+      1000
 
     // bit 69~94: eqkID
-    const eqkID = ((eqkData[8] & 0b111) << 23 |
-                  (eqkData[9] << 15) |
-                  (eqkData[10] << 7) |
-                  (eqkData[11] >> 1)) +
-                  2000000000
+    const eqkID =
+      (((eqkData[8] & 0b111) << 23) |
+        (eqkData[9] << 15) |
+        (eqkData[10] << 7) |
+        (eqkData[11] >> 1)) +
+      2000000000
 
     // bit 95~98: max intensity
-    const maxIntensity = (eqkData[11] & 0b1) << 3 | eqkData[12] >> 5
+    const maxIntensity = ((eqkData[11] & 0b1) << 3) | (eqkData[12] >> 5)
 
     // bit 99~116: max intensity area
-    const maxIntensityAreaBits = (eqkData[12] & 0b11111) << 13 |
-                                  eqkData[13] << 5 |
-                                  eqkData[14] >> 3
+    const maxIntensityAreaBits =
+      ((eqkData[12] & 0b11111) << 13) | (eqkData[13] << 5) | (eqkData[14] >> 3)
     const maxIntensityArea = []
 
-    if (maxIntensityAreaBits !== 0x1FFFF) {
+    if (maxIntensityAreaBits !== 0x1ffff) {
       for (let i = 0; i < 17; i++) {
         if ((maxIntensityAreaBits & (1 << (17 - i))) !== 0) {
           maxIntensityArea.push(REGIONS[i])
@@ -274,11 +289,11 @@ export class PEWSClient {
       maxIntensity,
       maxIntensityArea,
       dep,
-      eqkID
+      eqkID,
     }
   }
 
-  private async mmiBinStrHandler (data: Uint8Array): Promise<number[]> {
+  private async mmiBinStrHandler(data: Uint8Array): Promise<number[]> {
     const mmiArr: number[] = []
 
     for (const i of data) {
@@ -289,7 +304,7 @@ export class PEWSClient {
     return mmiArr
   }
 
-  phaseHandler (): void {
+  phaseHandler(): void {
     switch (this.phase) {
       case 1:
         this.Wrapper.emitEvent('phase_1')
@@ -297,9 +312,16 @@ export class PEWSClient {
 
       case 2:
         if (this.eqkInfo != null) {
-          const eewInfo = new EEWInfo(this.eqkInfo.lat, this.eqkInfo.lon, this.eqkInfo.time,
-            this.eqkInfo.location, this.eqkInfo.magnitude, this.eqkInfo.isOffshore,
-            this.eqkInfo.maxIntensity, this.eqkInfo.maxIntensityArea, this.eqkInfo.eqkID
+          const eewInfo = new EEWInfo(
+            this.eqkInfo.lat,
+            this.eqkInfo.lon,
+            this.eqkInfo.time,
+            this.eqkInfo.location,
+            this.eqkInfo.magnitude,
+            this.eqkInfo.isOffshore,
+            this.eqkInfo.maxIntensity,
+            this.eqkInfo.maxIntensityArea,
+            this.eqkInfo.eqkID,
           )
           if (this._cachedPhase !== 2) {
             this.Wrapper.emitEvent('new_eew', eewInfo)
@@ -312,9 +334,17 @@ export class PEWSClient {
 
       case 3:
         if (this.eqkInfo != null) {
-          const eqkInfo = new EqkInfo(this.eqkInfo.lat, this.eqkInfo.lon, this.eqkInfo.time,
-            this.eqkInfo.location, this.eqkInfo.magnitude, this.eqkInfo.isOffshore,
-            this.eqkInfo.maxIntensity, this.eqkInfo.maxIntensityArea, this.eqkInfo.dep ?? -1, this.eqkInfo.eqkID
+          const eqkInfo = new EqkInfo(
+            this.eqkInfo.lat,
+            this.eqkInfo.lon,
+            this.eqkInfo.time,
+            this.eqkInfo.location,
+            this.eqkInfo.magnitude,
+            this.eqkInfo.isOffshore,
+            this.eqkInfo.maxIntensity,
+            this.eqkInfo.maxIntensityArea,
+            this.eqkInfo.dep ?? -1,
+            this.eqkInfo.eqkID,
           )
 
           if (this._cachedPhase !== 3) {
@@ -334,7 +364,7 @@ export class PEWSClient {
     this._cachedPhase = this.phase
   }
 
-  async loop (): Promise<void> {
+  async loop(): Promise<void> {
     while (true) {
       try {
         if (this.needSync) {
@@ -349,7 +379,7 @@ export class PEWSClient {
         this.phaseHandler()
 
         this.Wrapper.emitEvent('loop')
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       } catch (err) {
         if (err instanceof HTTPError) {
           this.logger.warn(`loop(): ${err.message}`)
@@ -361,7 +391,7 @@ export class PEWSClient {
     }
   }
 
-  async run (): Promise<void> {
+  async run(): Promise<void> {
     await this.syncTime()
     this.startTimeSyncInterval()
 
@@ -371,16 +401,18 @@ export class PEWSClient {
         await this.getSta()
         break
       } catch (err) {
-        this.logger.warn('run(): failed to fetch station information. retrying...')
+        this.logger.warn(
+          'run(): failed to fetch station information. retrying...',
+        )
         this.Wrapper.emitEvent('error', err)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
       }
     }
 
     await this.loop()
   }
 
-  stop (): void {
+  stop(): void {
     this.stopLoop = true
     clearInterval(this.timeSyncIntervalID)
   }

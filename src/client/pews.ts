@@ -1,5 +1,8 @@
 import { SimulationPEWS } from '../sim/sim'
-import { type PEWSEvents, type TypedEventEmitter } from '../types/listener_event'
+import {
+  type PEWSEvents,
+  type TypedEventEmitter,
+} from '../types/listener_event'
 import { type Logger } from '../utils/logger'
 
 import { PEWSClient } from './client'
@@ -17,14 +20,20 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
    * @param startTime 시뮬레이션 시작 시각
    * @param endTime 시뮬레이션 종료 시각
    */
-  constructor (sim = false, eqkID?: number, startTime?: Date, endTime?: Date) {
+  constructor(sim = false, eqkID?: number, startTime?: Date, endTime?: Date) {
     // FIXME: need to remove this eslint-igonre in future
     // eslint-disable-next-line constructor-super
     super()
 
     if (sim) {
-      if (eqkID === undefined || startTime === undefined || endTime === undefined) {
-        throw new Error('eqkID, startTime, endTime must be given when sim is true!')
+      if (
+        eqkID === undefined ||
+        startTime === undefined ||
+        endTime === undefined
+      ) {
+        throw new Error(
+          'eqkID, startTime, endTime must be given when sim is true!',
+        )
       }
       this.PEWSClient = new SimulationPEWS(this, eqkID, startTime, endTime)
     } else {
@@ -44,15 +53,18 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
     }
   }
 
-  start (): void {
+  start(): void {
     void this.PEWSClient.run()
   }
 
-  emitEvent<E extends keyof PEWSEvents>(event: E, ...args: Parameters<PEWSEvents[E]>): void {
+  emitEvent<E extends keyof PEWSEvents>(
+    event: E,
+    ...args: Parameters<PEWSEvents[E]>
+  ): void {
     this.emit(event, ...args)
   }
 
-  stop (): void {
+  stop(): void {
     this.PEWSClient.stop()
   }
 }
