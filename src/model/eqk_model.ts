@@ -18,6 +18,26 @@ export interface EarthquakeInfo {
   eqkID?: number
 }
 
+function mmiOf(lat: number, lon: number, grid: number[]): number {
+  let cnt = 0
+  let mmi = 1
+
+  for (let i = 3885; i > 3000; i -= 5) {
+    for (let j = 12450; j < 13205; j += 5) {
+      if (Math.abs(lat - i / 100) < 0.025 && Math.abs(lon - j / 100) < 0.025) {
+        mmi = grid[cnt]
+
+        if (mmi > 11) mmi = 1
+        return mmi
+      }
+
+      cnt++
+    }
+  }
+
+  return mmi
+}
+
 export class EEWInfo implements EarthquakeInfo {
   /**
    * 지진조기경보 클래스 (phase 2)
@@ -41,6 +61,7 @@ export class EEWInfo implements EarthquakeInfo {
     public readonly isOffshore: boolean,
     public readonly maxIntensity: number,
     public readonly maxIntensityArea: string[],
+    private readonly gridArr: number[] = [],
     public readonly eqkID?: number,
   ) {}
 
@@ -50,10 +71,10 @@ export class EEWInfo implements EarthquakeInfo {
    * @param lat 위도
    * @param lon 경도
    *
-   * @returns 해당하는 위·경도의 추정진도
+   * @returns 해당하는 위·경도의 추정진도. 알 수 없는 경우 -1을 반환합니다.
    */
-  public estimatedIntensityOf(lat: number, lon: number): never {
-    throw new Error('Method not implemented.')
+  public estimatedIntensityOf(lat: number, lon: number): number {
+    return mmiOf(lat, lon, this.gridArr)
   }
 
   /**
@@ -96,6 +117,7 @@ export class EqkInfo implements EarthquakeInfo {
     public readonly isOffshore: boolean,
     public readonly maxIntensity: number,
     public readonly maxIntensityArea: string[],
+    private readonly gridArr: number[] = [],
     public readonly depth: number,
     public readonly eqkID?: number,
   ) {}
@@ -106,9 +128,9 @@ export class EqkInfo implements EarthquakeInfo {
    * @param lat 위도
    * @param lon 경도
    *
-   * @returns 해당하는 위·경도의 관측진도
+   * @returns 해당하는 위·경도의 관측진도. 알 수 없는 경우 -1을 반환합니다.
    */
-  public intensityOf(lat: number, lon: number): never {
-    throw new Error('Method not implemented.')
+  public intensityOf(lat: number, lon: number): number {
+    return mmiOf(lat, lon, this.gridArr)
   }
 }
