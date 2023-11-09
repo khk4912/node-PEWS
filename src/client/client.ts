@@ -293,11 +293,6 @@ export class PEWSClient {
       isOffshore = location.includes('해역')
     }
 
-    if ((this.phase === 2 || this._phase === 3) && this.renewGrid) {
-      if (this.eqkInfo?.eqkID !== undefined)
-        await this.getGrid(this.eqkInfo.eqkID.toString())
-    }
-
     this.eqkInfo = {
       lat,
       lon,
@@ -309,6 +304,12 @@ export class PEWSClient {
       maxIntensityArea,
       dep,
       eqkID,
+    }
+
+    if ((this.phase === 2 || this.phase === 3) && this.renewGrid) {
+      if (this.eqkInfo?.eqkID !== undefined) {
+        await this.getGrid(this.eqkInfo.eqkID.toString())
+      }
     }
   }
 
@@ -329,12 +330,13 @@ export class PEWSClient {
     }
 
     const res = await HTTP.getGrid(url, this.phase)
+    const grid = []
 
     for (const i of res.data) {
-      this.gridArr.push(i >> 4)
-      this.gridArr.push(i & 0b1111)
+      grid.push(i >> 4)
+      grid.push(i & 0b1111)
     }
-
+    this.gridArr = grid
     this.renewGrid = false
   }
 
