@@ -39,6 +39,9 @@ function mmiOf(lat: number, lon: number, grid: number[]): number {
 }
 
 export class EEWInfo implements EarthquakeInfo {
+  readonly #gridArr
+  readonly #tide
+
   /**
    * 지진조기경보 클래스 (phase 2)
    *
@@ -61,10 +64,13 @@ export class EEWInfo implements EarthquakeInfo {
     public readonly isOffshore: boolean,
     public readonly maxIntensity: number,
     public readonly maxIntensityArea: string[],
-    private readonly gridArr: number[] = [],
-    private readonly tide: number,
+    gridArr: number[],
+    tide: number,
     public readonly eqkID?: number,
-  ) {}
+  ) {
+    this.#gridArr = gridArr
+    this.#tide = tide
+  }
 
   /**
    * 입력한 위·경도의 추정진도를 반환합니다.
@@ -75,7 +81,7 @@ export class EEWInfo implements EarthquakeInfo {
    * @returns 해당하는 위·경도의 추정진도. 알 수 없는 경우 -1을 반환합니다.
    */
   public estimatedIntensityOf(lat: number, lon: number): number {
-    return mmiOf(lat, lon, this.gridArr)
+    return mmiOf(lat, lon, this.#gridArr)
   }
 
   /**
@@ -93,13 +99,15 @@ export class EEWInfo implements EarthquakeInfo {
           Math.pow((this.lat - lat) * 111, 2) +
             Math.pow((this.lon - lon) * 88, 2),
         ) / 3,
-      ) - Math.ceil((Date.now() - this.tide - this.time.getTime()) / 1000)
+      ) - Math.ceil((Date.now() - this.#tide - this.time.getTime()) / 1000)
 
     return new Date(Date.now() + sec * 1000)
   }
 }
 
 export class EqkInfo implements EarthquakeInfo {
+  readonly #gridArr
+
   /**
    * 지진정보 클래스 (phase 3)
    *
@@ -123,10 +131,12 @@ export class EqkInfo implements EarthquakeInfo {
     public readonly isOffshore: boolean,
     public readonly maxIntensity: number,
     public readonly maxIntensityArea: string[],
-    private readonly gridArr: number[] = [],
+    gridArr: number[],
     public readonly depth: number,
     public readonly eqkID?: number,
-  ) {}
+  ) {
+    this.#gridArr = gridArr
+  }
 
   /**
    * 입력한 위·경도에서 관측된 진도를 반환합니다.
@@ -137,6 +147,6 @@ export class EqkInfo implements EarthquakeInfo {
    * @returns 해당하는 위·경도의 관측진도. 알 수 없는 경우 -1을 반환합니다.
    */
   public intensityOf(lat: number, lon: number): number {
-    return mmiOf(lat, lon, this.gridArr)
+    return mmiOf(lat, lon, this.#gridArr)
   }
 }
