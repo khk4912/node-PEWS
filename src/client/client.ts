@@ -25,6 +25,7 @@ export class PEWSClient {
   private staList: Station[] = []
   private tide: number = this.delay
   private needSync = true
+  private renewGrid = true
   private timeSyncIntervalID?: NodeJS.Timeout
 
   // flag to stop loop
@@ -33,6 +34,7 @@ export class PEWSClient {
   // Earthqukae info
   private eqkInfo?: EarthquakeInfo
   private readonly cachedEqkInfo?: EarthquakeInfo
+  private gridArr: number[] = []
 
   constructor(wrapper: PEWS) {
     this.Wrapper = wrapper
@@ -94,6 +96,8 @@ export class PEWSClient {
 
     this.tide = dt - st * 1000 + this.delay
     this.needSync = false
+
+    this.logger.debug(`syncTime: Time synced. tide = ${this.tide}`)
   }
 
   private async callback(data: Uint8Array): Promise<void> {
@@ -200,8 +204,18 @@ export class PEWSClient {
     const bitEqkData = binDataBits.slice(-75)
 
     switch (this.phase) {
+      case 1:
+        if (this._cachedPhase === 2 || this._cachedPhase === 3) {
+          this.gridArr = []
+          this.renewGrid = true
+        }
+        break
       case 2:
       case 3:
+        if (this._phase !== this._cachedPhase) {
+          this.renewGrid = true
+        }
+
         await this.eqkHandler(bitEqkData)
         break
       case 4:
@@ -279,6 +293,11 @@ export class PEWSClient {
       isOffshore = location.includes('해역')
     }
 
+    if ((this.phase === 2 || this._phase === 3) && this.renewGrid) {
+      if (this.eqkInfo?.eqkID !== undefined)
+        await this.getGrid(this.eqkInfo.eqkID.toString())
+    }
+
     this.eqkInfo = {
       lat,
       lon,
@@ -304,6 +323,21 @@ export class PEWSClient {
     return mmiArr
   }
 
+  private async getGrid(url: string): Promise<void> {
+    if (!(this.phase === 2 || this.phase === 3)) {
+      return
+    }
+
+    const res = await HTTP.getGrid(url, this.phase)
+
+    for (const i of res.data) {
+      this.gridArr.push(i >> 4)
+      this.gridArr.push(i & 0b1111)
+    }
+
+    this.renewGrid = false
+  }
+
   phaseHandler(): void {
     switch (this.phase) {
       case 1:
@@ -321,6 +355,8 @@ export class PEWSClient {
             this.eqkInfo.isOffshore,
             this.eqkInfo.maxIntensity,
             this.eqkInfo.maxIntensityArea,
+            this.gridArr,
+            this.tide,
             this.eqkInfo.eqkID,
           )
           if (this._cachedPhase !== 2) {
@@ -343,6 +379,7 @@ export class PEWSClient {
             this.eqkInfo.isOffshore,
             this.eqkInfo.maxIntensity,
             this.eqkInfo.maxIntensityArea,
+            this.gridArr,
             this.eqkInfo.dep ?? -1,
             this.eqkInfo.eqkID,
           )

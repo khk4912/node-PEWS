@@ -62,6 +62,7 @@ export class EEWInfo implements EarthquakeInfo {
     public readonly maxIntensity: number,
     public readonly maxIntensityArea: string[],
     private readonly gridArr: number[] = [],
+    private readonly tide: number,
     public readonly eqkID?: number,
   ) {}
 
@@ -85,11 +86,16 @@ export class EEWInfo implements EarthquakeInfo {
    *
    * @returns 해당하는 위·경도의 S파의 예상도달시각
    */
-  public estimatedArrivalTimeOf(lat: number, lon: number): never {
-    // const distance = Math.sqrt(((this.lat - lat) * 111) ** 2 + ((this.lon - lon) * 88) ** 2) / 3
-    // const arrivalTime = new Date(this.time.getTime() + distance * 1000 / 3.0)
-    // return arrivalTime
-    throw new Error('Method not implemented.')
+  public estimatedArrivalTimeOf(lat: number, lon: number): Date {
+    const sec =
+      Math.floor(
+        Math.sqrt(
+          Math.pow((this.lat - lat) * 111, 2) +
+            Math.pow((this.lon - lon) * 88, 2),
+        ) / 3,
+      ) - Math.ceil((Date.now() - this.tide - this.time.getTime()) / 1000)
+
+    return new Date(Date.now() + sec * 1000)
   }
 }
 

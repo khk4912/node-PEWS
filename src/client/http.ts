@@ -81,3 +81,22 @@ export const getLoc = async (
     throw handleError(err, 'getLoc')
   }
 }
+
+export const getGrid = async (
+  url: string,
+  phase: 2 | 3,
+): Promise<AxiosResponse<Uint8Array>> => {
+  try {
+    if (phase === 2) {
+      return await client.get(`data/${url}.e`, {
+        responseType: 'arraybuffer',
+      })
+    } else {
+      return await client.get(`data/${url}.i`, {
+        responseType: 'arraybuffer',
+      })
+    }
+  } catch (err) {
+    throw handleError(err, 'getGrid')
+  }
+}
