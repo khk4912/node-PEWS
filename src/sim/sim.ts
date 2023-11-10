@@ -38,6 +38,7 @@ export class SimulationPEWS extends PEWSClient {
     this.currentTime = new Date(this.currentTime.getTime() + 1000)
 
     if (this.currentTime.getTime() > this.endTime.getTime()) {
+      this.logger.debug('increaseTime(): currentTime > endTime. stopping...')
       this.stop()
     }
   }

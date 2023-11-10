@@ -113,6 +113,7 @@ export class PEWSClient {
     const byteArray = res.data
 
     await this.staBinHandler(byteArray)
+    this.logger.debug('getSta: fetched station information')
   }
 
   private async staBinHandler(byteArray: Uint8Array): Promise<void> {
