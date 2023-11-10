@@ -20,7 +20,7 @@ export interface EarthquakeInfo {
 
 function mmiOf(lat: number, lon: number, grid: number[]): number {
   let cnt = 0
-  let mmi = 1
+  let mmi = -1
 
   for (let i = 3885; i > 3000; i -= 5) {
     for (let j = 12450; j < 13205; j += 5) {
@@ -100,7 +100,7 @@ export class EEWInfo implements EarthquakeInfo {
             Math.pow((this.lon - lon) * 88, 2),
         ) / 3,
       ) - Math.ceil((Date.now() - this.#tide - this.time.getTime()) / 1000)
-
+    console.log(sec)
     return new Date(Date.now() + sec * 1000)
   }
 }
