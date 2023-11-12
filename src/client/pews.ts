@@ -12,6 +12,7 @@ import { EventEmitter } from 'events'
 export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvents>) {
   private readonly PEWSClient: PEWSClient
   public readonly logger: Logger
+  public readonly sim: boolean
 
   /**
    * PEWS Client
@@ -25,6 +26,8 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
     // FIXME: need to remove this eslint-igonre in future
     // eslint-disable-next-line constructor-super
     super()
+
+    this.sim = sim
 
     if (sim) {
       if (

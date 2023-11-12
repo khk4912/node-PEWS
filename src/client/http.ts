@@ -70,12 +70,15 @@ export const getSta = async (
 export const getLoc = async (
   url: number,
   phase: 2 | 3,
+  sim: boolean = false,
 ): Promise<AxiosResponse<LocationInfo>> => {
   try {
     if (phase === 2) {
-      return await client.get(`data/${url}/${url}.le`)
+      if (sim) return await client.get(`data/${url}/${url}.le`)
+      return await client.get(`data/${url}.le`)
     } else {
-      return await client.get(`data/${url}/${url}.li`)
+      if (sim) return await client.get(`data/${url}/${url}.li`)
+      return await client.get(`data/${url}/.li`)
     }
   } catch (err) {
     throw handleError(err, 'getLoc')
@@ -85,13 +88,24 @@ export const getLoc = async (
 export const getGrid = async (
   url: string,
   phase: 2 | 3,
+  sim: boolean = false,
 ): Promise<AxiosResponse<Uint8Array>> => {
   try {
     if (phase === 2) {
+      if (sim)
+        return await client.get(`data/${url}/${url}.e`, {
+          responseType: 'arraybuffer',
+        })
+
       return await client.get(`data/${url}.e`, {
         responseType: 'arraybuffer',
       })
     } else {
+      if (sim)
+        return await client.get(`data/${url}/${url}.i`, {
+          responseType: 'arraybuffer',
+        })
+
       return await client.get(`data/${url}.i`, {
         responseType: 'arraybuffer',
       })

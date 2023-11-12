@@ -109,7 +109,7 @@ export class PEWSClient {
     const mmiObj = await this.mmiBinStrHandler(data)
 
     for (let i = 0; i < this.staList.length; i++) {
-      this.staList[i].mmi = mmiObj[i] < 11 ? mmiObj[i] : 1
+      this.staList[i].mmi = mmiObj[i] > 11 ? 1 : mmiObj[i]
     }
   }
 
@@ -246,7 +246,7 @@ export class PEWSClient {
     phase: 2 | 3,
   ): Promise<LocationInfo> {
     this.logger.debug(`getLocation: ${eqkID}`)
-    return (await HTTP.getLoc(eqkID, phase)).data
+    return (await HTTP.getLoc(eqkID, phase, this.Wrapper.sim)).data
   }
 
   private async eqkHandler(eqkData: Uint8Array): Promise<void> {
@@ -315,6 +315,7 @@ export class PEWSClient {
       dep,
       eqkID,
     }
+    console.log(this.eqkInfo)
 
     if ((this.phase === 2 || this.phase === 3) && this.renewGrid) {
       if (this.eqkInfo?.eqkID !== undefined) {
@@ -339,7 +340,7 @@ export class PEWSClient {
       return
     }
 
-    const res = await HTTP.getGrid(url, this.phase)
+    const res = await HTTP.getGrid(url, this.phase, this.Wrapper.sim)
     const grid = []
 
     for (const i of res.data) {
