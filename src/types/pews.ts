@@ -4,3 +4,9 @@ export interface LocationInfo {
   info_en: string
   info_ko: string
 }
+
+export interface StationInfo {
+  name: string
+  code: string
+  inOp: boolean
+}
