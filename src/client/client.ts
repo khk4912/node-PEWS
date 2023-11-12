@@ -109,7 +109,7 @@ export class PEWSClient {
     const mmiObj = await this.mmiBinStrHandler(data)
 
     for (let i = 0; i < this.staList.length; i++) {
-      this.staList[i].mmi = mmiObj[i] > 11 ? mmiObj[i] : 1
+      this.staList[i].mmi = mmiObj[i] < 11 ? mmiObj[i] : 1
     }
   }
 
