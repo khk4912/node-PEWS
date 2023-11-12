@@ -10,6 +10,7 @@ import * as HTTP from './http'
 import { type PEWS } from './pews'
 import { type LocationInfo, type Phase } from '../types/pews'
 import { Logger } from '../utils/logger'
+import { StationDB } from '../utils/station_constant'
 
 export class PEWSClient {
   private readonly delay = 1000
@@ -147,6 +148,7 @@ export class PEWSClient {
         lat: staLatArr[i],
         lon: staLonArr[i],
         mmi: -1,
+        info: StationDB[i],
       }
       newStaList.push(station)
     }

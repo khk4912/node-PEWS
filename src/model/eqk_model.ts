@@ -1,8 +1,11 @@
+import { type StationInfo } from '../types/pews'
+
 export interface Station {
   idx: number
   lat: number
   lon: number
-  mmi?: number
+  mmi: number
+  info: StationInfo
 }
 
 export interface EarthquakeInfo {
