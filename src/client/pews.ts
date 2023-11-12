@@ -1,3 +1,4 @@
+import { type Station } from '../model/eqk_model'
 import { SimulationPEWS } from '../sim/sim'
 import {
   type PEWSEvents,
@@ -66,5 +67,9 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
 
   stop(): void {
     this.PEWSClient.stop()
+  }
+
+  get stations(): Station[] {
+    return this.PEWSClient.stations
   }
 }

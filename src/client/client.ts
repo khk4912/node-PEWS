@@ -46,6 +46,10 @@ export class PEWSClient {
     return this._phase
   }
 
+  get stations(): Station[] {
+    return this.staList
+  }
+
   private escape(arr: number[]): string {
     // write function that does exactly same job as escape() in ECMAScript 262
     let res = ''
