@@ -221,6 +221,9 @@ export class PEWSClient {
       case 3:
         if (this._phase !== this._cachedPhase) {
           this.renewGrid = true
+
+          // TODO: eqkInfo 캐싱 도입 후,
+          // 이전 event ID 와 다를 때에 renewGrid = true 처리 필요.
         }
 
         await this.eqkHandler(bitEqkData)
