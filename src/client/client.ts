@@ -6,7 +6,7 @@ import {
   type Station,
 } from '../model/eqk_model'
 import { HTTPError } from '../utils/error'
-import * as HTTP from './http'
+import { HTTP } from './http'
 import { type PEWS } from './pews'
 import { type LocationInfo, type Phase } from '../types/pews'
 import { Logger } from '../utils/logger'
@@ -15,6 +15,7 @@ import { StationDB } from '../utils/station_constant'
 export class PEWSClient {
   private readonly delay = 1000
   protected readonly Wrapper: PEWS
+  private readonly HTTP: HTTP
 
   public readonly logger: Logger = new Logger()
 
@@ -40,6 +41,12 @@ export class PEWSClient {
   constructor(wrapper: PEWS) {
     this.Wrapper = wrapper
     this.tide = this.delay
+
+    if (this.Wrapper.sim) {
+      this.HTTP = new HTTP(true, this.Wrapper.eqkID)
+    } else {
+      this.HTTP = new HTTP()
+    }
   }
 
   get phase(): Phase {
@@ -92,11 +99,7 @@ export class PEWSClient {
   }
 
   private async syncTime(): Promise<void> {
-    const res = await HTTP.get('pews2.html')
-
-    const header = res.headers
-    const st = Number(header.st)
-
+    const st = await this.HTTP.getST()
     const dt = new Date().getTime()
 
     this.tide = dt - st * 1000 + this.delay
@@ -114,7 +117,7 @@ export class PEWSClient {
   }
 
   protected async getSta(url?: string): Promise<void> {
-    const res = await HTTP.getSta(url ?? this.getTimeString())
+    const res = await this.HTTP.getSta(url ?? this.getTimeString())
     const byteArray = res.data
 
     await this.staBinHandler(byteArray)
@@ -167,7 +170,7 @@ export class PEWSClient {
     url = url ?? this.getTimeString()
 
     try {
-      res = await HTTP.getMMI(url)
+      res = await this.HTTP.getMMI(url)
       this.logger.debug(`getMMI: ${url}`)
     } catch (err) {
       if (err instanceof HTTPError) {
@@ -246,7 +249,7 @@ export class PEWSClient {
     phase: 2 | 3,
   ): Promise<LocationInfo> {
     this.logger.debug(`getLocation: ${eqkID}`)
-    return (await HTTP.getLoc(eqkID, phase, this.Wrapper.sim)).data
+    return (await this.HTTP.getLoc(eqkID, phase)).data
   }
 
   private async eqkHandler(eqkData: Uint8Array): Promise<void> {
@@ -340,7 +343,7 @@ export class PEWSClient {
       return
     }
 
-    const res = await HTTP.getGrid(url, this.phase, this.Wrapper.sim)
+    const res = await this.HTTP.getGrid(url, this.phase)
     const grid = []
 
     for (const i of res.data) {

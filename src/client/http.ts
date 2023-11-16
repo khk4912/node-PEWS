@@ -1,11 +1,33 @@
-import axios, { type AxiosResponse, AxiosError } from 'axios'
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type AxiosResponse,
+} from 'axios'
+
 import { HTTPError } from '../utils/error'
 import { type LocationInfo } from '../types/pews'
 
-const client = axios.create({
-  baseURL: 'https://www.weather.go.kr/pews/',
-  timeout: 1000,
-})
+const handleHTTPError = (
+  _: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor,
+): any => {
+  const method = descriptor.value
+
+  descriptor.value = async function (...args: any[]) {
+    try {
+      const res = method.apply(this, args)
+
+      if (res instanceof Promise) {
+        return await res
+      }
+
+      return res
+    } catch (error) {
+      throw handleError(error, propertyKey)
+    }
+  }
+}
 
 const handleError = (err: unknown, event: string): unknown => {
   if (err instanceof AxiosError) {
@@ -21,96 +43,55 @@ const handleError = (err: unknown, event: string): unknown => {
   return err
 }
 
-/**
- * 모든 GET request에 사용됩니다.
- *
- * @param url 요청할 URL.
- * @returns AxiosResponse 객체
- */
-export const get = async (url?: string): Promise<AxiosResponse> => {
-  try {
-    return await client.get(url ?? '')
-  } catch (err) {
-    throw handleError(err, 'get')
-  }
-}
+export class HTTP {
+  private readonly client: AxiosInstance
 
-/**
- * MMI 정보(.b)를 요청합니다.
- *
- * @param url 요청할 URL.
- * @returns AxiosResponse 객체
- */
-export const getMMI = async (
-  url: string,
-): Promise<AxiosResponse<Uint8Array>> => {
-  try {
-    return await client.get(`data/${url}.b`, { responseType: 'arraybuffer' })
-  } catch (err) {
-    throw handleError(err, 'getMMI')
-  }
-}
-
-/**
- * 관측소 정보(.s)를 요청합니다.
- *
- * @param url 요청할 URL.
- * @returns AxiosResponse 객체.
- */
-export const getSta = async (
-  url: string,
-): Promise<AxiosResponse<Uint8Array>> => {
-  try {
-    return await client.get(`data/${url}.s`, { responseType: 'arraybuffer' })
-  } catch (err) {
-    throw handleError(err, 'getSta')
-  }
-}
-
-export const getLoc = async (
-  url: number,
-  phase: 2 | 3,
-  sim: boolean = false,
-): Promise<AxiosResponse<LocationInfo>> => {
-  try {
-    if (phase === 2) {
-      if (sim) return await client.get(`data/${url}/${url}.le`)
-      return await client.get(`data/${url}.le`)
-    } else {
-      if (sim) return await client.get(`data/${url}/${url}.li`)
-      return await client.get(`data/${url}/.li`)
+  constructor(sim: boolean = false, eqkID?: number) {
+    if (sim && eqkID === undefined) {
+      throw new Error('eqkID must be given when sim is true!')
     }
-  } catch (err) {
-    throw handleError(err, 'getLoc')
+
+    this.client = axios.create({
+      baseURL: sim
+        ? `https://www.weather.go.kr/pews/data/${eqkID}`
+        : 'httpas://www.weather.go.kr/pews/data',
+    })
   }
-}
 
-export const getGrid = async (
-  url: string,
-  phase: 2 | 3,
-  sim: boolean = false,
-): Promise<AxiosResponse<Uint8Array>> => {
-  try {
+  @handleHTTPError
+  async getMMI(url?: string): Promise<AxiosResponse<Uint8Array>> {
+    return await this.client.get(`${url}.b`, { responseType: 'arraybuffer' })
+  }
+
+  @handleHTTPError
+  async getSta(url?: string): Promise<AxiosResponse<Uint8Array>> {
+    return await this.client.get(`${url}.s`, { responseType: 'arraybuffer' })
+  }
+
+  @handleHTTPError
+  async getLoc(
+    url: number,
+    phase: 2 | 3,
+  ): Promise<AxiosResponse<LocationInfo>> {
     if (phase === 2) {
-      if (sim)
-        return await client.get(`data/${url}/${url}.e`, {
-          responseType: 'arraybuffer',
-        })
-
-      return await client.get(`data/${url}.e`, {
-        responseType: 'arraybuffer',
-      })
-    } else {
-      if (sim)
-        return await client.get(`data/${url}/${url}.i`, {
-          responseType: 'arraybuffer',
-        })
-
-      return await client.get(`data/${url}.i`, {
-        responseType: 'arraybuffer',
-      })
+      return await this.client.get(`${url}.le`)
     }
-  } catch (err) {
-    throw handleError(err, 'getGrid')
+
+    return await this.client.get(`${url}.li`)
+  }
+
+  @handleHTTPError
+  async getGrid(url: string, phase: 2 | 3): Promise<AxiosResponse<Uint8Array>> {
+    if (phase === 2) {
+      return await this.client.get(`${url}.e`, { responseType: 'arraybuffer' })
+    }
+
+    return await this.client.get(`${url}.i`, { responseType: 'arraybuffer' })
+  }
+
+  @handleHTTPError
+  async getST(): Promise<number> {
+    const res = await axios.get('https://www.weather.go.kr/pews/')
+    return res.headers.st
   }
 }

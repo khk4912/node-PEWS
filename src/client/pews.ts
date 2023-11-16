@@ -12,8 +12,12 @@ import { EventEmitter } from 'events'
 export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvents>) {
   private readonly PEWSClient: PEWSClient
   public readonly logger: Logger
+
   public readonly sim: boolean
 
+  public readonly eqkID?: number
+  public readonly startTime?: Date
+  public readonly endTime?: Date
   /**
    * PEWS Client
    *
@@ -39,6 +43,10 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
           'eqkID, startTime, endTime must be given when sim is true!',
         )
       }
+      this.eqkID = eqkID
+      this.startTime = startTime
+      this.endTime = endTime
+
       this.PEWSClient = new SimulationPEWS(this, eqkID, startTime, endTime)
     } else {
       this.PEWSClient = new PEWSClient(this)

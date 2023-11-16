@@ -49,36 +49,36 @@ export class SimulationPEWS extends PEWSClient {
     }, 1000)
   }
 
-  async loop(): Promise<void> {
-    while (true) {
-      try {
-        if (this.stopLoop) {
-          break
-        }
+  // async loop(): Promise<void> {
+  //   while (true) {
+  //     try {
+  //       if (this.stopLoop) {
+  //         break
+  //       }
 
-        await this.getMMI(`${this.eqkID}/${this.getTimeString()}`)
+  //       await this.getMMI(`${this.eqkID}/${this.getTimeString()}`)
 
-        this.phaseHandler()
-        this.Wrapper.emitEvent('loop')
+  //       this.phaseHandler()
+  //       this.Wrapper.emitEvent('loop')
 
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      } catch (err) {
-        if (err instanceof HTTPError) {
-          this.logger.warn(`loop(): ${err.message}`)
-          this.Wrapper.emitEvent('error', err)
-        } else {
-          throw err
-        }
-      }
-    }
-  }
+  //       await new Promise((resolve) => setTimeout(resolve, 1000))
+  //     } catch (err) {
+  //       if (err instanceof HTTPError) {
+  //         this.logger.warn(`loop(): ${err.message}`)
+  //         this.Wrapper.emitEvent('error', err)
+  //       } else {
+  //         throw err
+  //       }
+  //     }
+  //   }
+  // }
 
   async run(): Promise<void> {
     this.startIncreaseTimeInterval()
 
     while (true) {
       try {
-        await this.getSta(`${this.eqkID}/${this.getTimeString()}`)
+        await this.getSta(`${this.getTimeString()}`)
         break
       } catch (err) {
         this.logger.warn(
