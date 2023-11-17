@@ -37,6 +37,7 @@ const handleError = (err: unknown, event: string): unknown => {
     if (err.response !== undefined) {
       return new HTTPError(err.message, err.response.status, event)
     }
+
     return new HTTPError('Unknown error', 500, event)
   }
 
@@ -54,7 +55,7 @@ export class HTTP {
     this.client = axios.create({
       baseURL: sim
         ? `https://www.weather.go.kr/pews/data/${eqkID}`
-        : 'httpas://www.weather.go.kr/pews/data',
+        : 'https://www.weather.go.kr/pews/data',
     })
   }
 
