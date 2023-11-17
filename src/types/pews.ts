@@ -9,4 +9,6 @@ export interface StationInfo {
   name: string
   code: string
   inOp: boolean
+  lat: number
+  lon: number
 }

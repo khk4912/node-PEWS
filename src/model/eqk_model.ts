@@ -5,7 +5,7 @@ export interface Station {
   lat: number
   lon: number
   mmi: number
-  info: StationInfo
+  info: StationInfo | null
 }
 
 export interface EarthquakeInfo {
