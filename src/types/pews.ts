@@ -8,7 +8,12 @@ export interface LocationInfo {
 export interface StationInfo {
   name: string
   code: string
-  inOp: boolean
+  inOperation: boolean
+}
+
+interface StationDatabaseElements extends StationInfo {
   lat: number
   lon: number
 }
+
+export type StationDatabse = StationDatabaseElements[]
