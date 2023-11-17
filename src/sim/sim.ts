@@ -1,7 +1,6 @@
 import { PEWSClient } from '../client/client'
 import { type PEWS } from '../client/pews'
 import { TZ_MSEC } from '../model/constant'
-import { HTTPError } from '../utils/error'
 
 export class SimulationPEWS extends PEWSClient {
   protected HEADER_LEN = 1
@@ -48,30 +47,6 @@ export class SimulationPEWS extends PEWSClient {
       this.increaseTime()
     }, 1000)
   }
-
-  // async loop(): Promise<void> {
-  //   while (true) {
-  //     try {
-  //       if (this.stopLoop) {
-  //         break
-  //       }
-
-  //       await this.getMMI(`${this.eqkID}/${this.getTimeString()}`)
-
-  //       this.phaseHandler()
-  //       this.Wrapper.emitEvent('loop')
-
-  //       await new Promise((resolve) => setTimeout(resolve, 1000))
-  //     } catch (err) {
-  //       if (err instanceof HTTPError) {
-  //         this.logger.warn(`loop(): ${err.message}`)
-  //         this.Wrapper.emitEvent('error', err)
-  //       } else {
-  //         throw err
-  //       }
-  //     }
-  //   }
-  // }
 
   async run(): Promise<void> {
     this.startIncreaseTimeInterval()
