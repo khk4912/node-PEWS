@@ -11,8 +11,6 @@ export const getStationInfo = (
 
   stations.sort((a, b) => Number(b.inOperation) - Number(a.inOperation))
 
-  console.log(lat, lon, stations[0])
-
   return stations.length > 0
     ? {
         code: stations[0].code,
