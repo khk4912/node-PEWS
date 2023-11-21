@@ -11,7 +11,7 @@
 - TODO
 
   - [x] 특정 지점 예상도달 시간 / 에상진도 (getGrid())
-  - [ ] Station 정보
+  - [x] Station 정보
   - [ ] Station MMI II 이상 시 발생 event
   - [ ] 다중지진 대응...?
   - [ ] 캐싱...?
