@@ -110,9 +110,22 @@ export class PEWSClient {
 
   private async callback(data: Uint8Array): Promise<void> {
     const mmiObj = await this.mmiBinStrHandler(data)
+    const mmiEventArr: Station[] = []
 
     for (let i = 0; i < this.staList.length; i++) {
-      this.staList[i].mmi = mmiObj[i] > 11 ? 1 : mmiObj[i]
+      const mmi = mmiObj[i] > 11 ? 1 : mmiObj[i]
+      this.staList[i].mmi = mmi
+
+      if (mmi >= 2) {
+        mmiEventArr.push(this.staList[i])
+      }
+    }
+
+    let length: number
+
+    if ((length = mmiEventArr.length) > 0) {
+      this.Wrapper.emitEvent('mmi_event', mmiEventArr)
+      this.logger.debug(`callback: mmi_event emitted (${length} stations)`)
     }
   }
 

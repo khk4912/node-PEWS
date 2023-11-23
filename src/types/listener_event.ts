@@ -1,4 +1,4 @@
-import { type EEWInfo, type EqkInfo } from '../model/eqk_model'
+import { type EEWInfo, type EqkInfo, type Station } from '../model/eqk_model'
 
 export interface TypedEventEmitter<Events extends EventType<Events>> {
   on: <E extends keyof Events>(event: E, listener: Events[E]) => this
@@ -25,6 +25,7 @@ export interface PEWSEvents {
   phase_4: () => any
   loop: () => any
   error: (err: unknown) => any
+  mmi_event: (stations: Station[]) => any
 }
 
 export const PEWSEventList: Array<keyof PEWSEvents> = [
