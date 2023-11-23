@@ -12,7 +12,7 @@
 
   - [x] 특정 지점 예상도달 시간 / 에상진도 (getGrid())
   - [x] Station 정보
-  - [ ] Station MMI II 이상 시 발생 event
+  - [x] Station MMI II 이상 시 발생 event
   - [ ] 다중지진 대응...?
   - [ ] 캐싱...?
   - [x] TS 데코레이터 기반 이벤트...??
