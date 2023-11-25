@@ -1,5 +1,7 @@
 import { type EEWInfo, type EqkInfo, type Station } from '../model/eqk_model'
 
+export type EventType<T> = Record<keyof T, (...args: any[]) => any>
+
 export interface TypedEventEmitter<Events extends EventType<Events>> {
   on: <E extends keyof Events>(event: E, listener: Events[E]) => this
   emit: <E extends keyof Events>(
@@ -16,7 +18,21 @@ export interface TypedEventEmitter<Events extends EventType<Events>> {
   listeners: <E extends keyof Events>(event: E) => Array<Events[E]>
 }
 
-export interface PEWSEvents {
+export const PEWSEvents = [
+  'new_eew',
+  'new_info',
+  'phase_1',
+  'phase_2',
+  'phase_3',
+  'phase_4',
+  'loop',
+  'error',
+  'mmi_event',
+] as const
+
+export type PEWSEventType = (typeof PEWSEvents)[number]
+
+export interface EventSignatures {
   new_eew: (data: EEWInfo) => any
   new_info: (data: EqkInfo) => any
   phase_1: () => any
@@ -28,15 +44,6 @@ export interface PEWSEvents {
   mmi_event: (stations: Station[]) => any
 }
 
-export const PEWSEventList: Array<keyof PEWSEvents> = [
-  'new_eew',
-  'new_info',
-  'phase_1',
-  'phase_2',
-  'phase_3',
-  'phase_4',
-  'loop',
-  'error',
-]
-
-export type EventType<T> = Record<keyof T, (...args: any[]) => any>
+export type PEWSEventSignatures = {
+  [K in PEWSEventType]: EventSignatures[K]
+}

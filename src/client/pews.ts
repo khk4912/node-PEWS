@@ -1,7 +1,8 @@
 import { type Station } from '../model/eqk_model'
 import { SimulationPEWS } from '../sim/sim'
 import {
-  type PEWSEvents,
+  type PEWSEventType,
+  type PEWSEventSignatures,
   type TypedEventEmitter,
 } from '../types/listener_event'
 import { type Logger } from '../utils/logger'
@@ -9,7 +10,7 @@ import { type Logger } from '../utils/logger'
 import { PEWSClient } from './client'
 import { EventEmitter } from 'events'
 
-export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvents>) {
+export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEventSignatures>) {
   private readonly PEWSClient: PEWSClient
   public readonly logger: Logger
 
@@ -18,6 +19,7 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
   public readonly eqkID?: number
   public readonly startTime?: Date
   public readonly endTime?: Date
+
   /**
    * PEWS Client
    *
@@ -58,7 +60,10 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
 
     if (self.__decoratedEvents !== undefined) {
       for (const event in self.__decoratedEvents) {
-        this.on(event as keyof PEWSEvents, self.__decoratedEvents[event])
+        this.on(
+          event as keyof PEWSEventSignatures,
+          self.__decoratedEvents[event],
+        )
       }
 
       delete self.__decoratedEvents
@@ -69,9 +74,9 @@ export class PEWS extends (EventEmitter as new () => TypedEventEmitter<PEWSEvent
     void this.PEWSClient.run()
   }
 
-  emitEvent<E extends keyof PEWSEvents>(
+  emitEvent<E extends PEWSEventType>(
     event: E,
-    ...args: Parameters<PEWSEvents[E]>
+    ...args: Parameters<PEWSEventSignatures[E]>
   ): void {
     this.emit(event, ...args)
   }

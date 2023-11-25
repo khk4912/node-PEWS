@@ -1,7 +1,11 @@
-import { PEWSEventList, type PEWSEvents } from '../types/listener_event'
+import {
+  PEWSEvents,
+  type PEWSEventType,
+  type PEWSEventSignatures,
+} from '../types/listener_event'
 import { PEWS } from './pews'
 
-export function event(eventName?: keyof PEWSEvents) {
+export function event(eventName?: PEWSEventType) {
   return function (
     target: any,
     propertyKey: string,
@@ -12,10 +16,10 @@ export function event(eventName?: keyof PEWSEvents) {
     }
 
     if (eventName === undefined) {
-      eventName = propertyKey as keyof PEWSEvents
+      eventName = propertyKey as keyof PEWSEventSignatures
     }
 
-    if (!PEWSEventList.includes(eventName)) {
+    if (!PEWSEvents.includes(eventName)) {
       throw new Error(`Event name ${eventName} is not valid!`)
     }
 
