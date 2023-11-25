@@ -299,9 +299,9 @@ export class PEWSClient {
     // bit 95~98: max intensity
     const maxIntensity = ((eqkData[11] & 0b1) << 3) | (eqkData[12] >> 5)
 
-    // bit 99~116: max intensity area
+    // bit 99~115: max intensity area
     const maxIntensityAreaBits =
-      ((eqkData[12] & 0b11111) << 13) | (eqkData[13] << 5) | (eqkData[14] >> 3)
+      ((eqkData[12] & 0b11111) << 12) | (eqkData[13] << 4) | (eqkData[14] >> 4)
     const maxIntensityArea = []
 
     if (maxIntensityAreaBits !== 0x1ffff) {
