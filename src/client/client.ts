@@ -116,7 +116,7 @@ export class PEWSClient {
       const mmi = mmiObj[i] > 11 ? 1 : mmiObj[i]
       this.staList[i].mmi = mmi
 
-      if (mmi >= 2) {
+      if (mmi >= 2 && this.staList[i].info?.name !== undefined) {
         mmiEventArr.push(this.staList[i])
       }
     }
