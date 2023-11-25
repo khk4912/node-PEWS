@@ -306,7 +306,7 @@ export class PEWSClient {
 
     if (maxIntensityAreaBits !== 0x1ffff) {
       for (let i = 0; i < 17; i++) {
-        if ((maxIntensityAreaBits & (1 << (17 - i))) !== 0) {
+        if ((maxIntensityAreaBits & (1 << (16 - i))) !== 0) {
           maxIntensityArea.push(REGIONS[i])
         }
       }
