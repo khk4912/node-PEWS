@@ -5,21 +5,32 @@ import {
 } from '../types/listener_event'
 import { PEWS } from './pews'
 
-export function event(eventName?: PEWSEventType) {
-  return function (
+export function event<T extends PEWSEventType>(eventName?: T) {
+  return function <
+    X extends typeof eventName,
+    Y extends PEWSEventType | string,
+  >(
     target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
+    propertyKey: Y,
+    descriptor: X extends PEWSEventType
+      ? TypedPropertyDescriptor<PEWSEventSignatures[T]>
+      : Y extends PEWSEventType
+      ? TypedPropertyDescriptor<PEWSEventSignatures[Y]>
+      : never,
   ) {
     if (!(target instanceof PEWS)) {
       throw new Error('event decorator can only be used in PEWS class')
     }
 
+    let evt: PEWSEventType
+
     if (eventName === undefined) {
-      eventName = propertyKey as keyof PEWSEventSignatures
+      evt = propertyKey as PEWSEventType
+    } else {
+      evt = eventName
     }
 
-    if (!PEWSEvents.includes(eventName)) {
+    if (!PEWSEvents.includes(evt)) {
       throw new Error(`Event name ${eventName} is not valid!`)
     }
 
@@ -28,6 +39,6 @@ export function event(eventName?: PEWSEventType) {
     if (t.__decoratedEvents === undefined) {
       t.__decoratedEvents = {}
     }
-    t.__decoratedEvents[eventName] = descriptor.value
+    t.__decoratedEvents[evt] = descriptor.value
   }
 }

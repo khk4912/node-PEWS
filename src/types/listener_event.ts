@@ -32,7 +32,7 @@ export const PEWSEvents = [
 
 export type PEWSEventType = (typeof PEWSEvents)[number]
 
-export interface EventSignatures {
+interface EventSignatures {
   new_eew: (data: EEWInfo) => any
   new_info: (data: EqkInfo) => any
   phase_1: () => any
