@@ -243,8 +243,6 @@ export class PEWSClient {
         if (this._phase !== this._cachedPhase) {
           this.renewGrid = true
           needCaching = true
-          // TODO: eqkInfo 캐싱 도입 후,
-          // 이전 event ID 와 다를 때에 renewGrid = true 처리 필요.
         }
         await this.eqkHandler(bitEqkData)
 
@@ -298,7 +296,11 @@ export class PEWSClient {
             "eqkHandler: eqkID hasn't changed, using cached data",
           )
           return
+        } else if (this._cachedPhase2Info !== undefined) {
+          this.renewGrid = true
+          this.logger.debug('New event ID, renewing grid data')
         }
+
         break
 
       case 3:
@@ -308,6 +310,9 @@ export class PEWSClient {
             "eqkHandler: eqkID hasn't changed, using cached data",
           )
           return
+        } else if (this._cachedPhase3Info !== undefined) {
+          this.renewGrid = true
+          this.logger.debug('New event ID, renewing grid data')
         }
         break
     }

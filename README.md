@@ -14,7 +14,7 @@
   - [x] Station 정보
   - [x] Station MMI II 이상 시 발생 event
   - [ ] 다중지진 대응...?
-  - [ ] 캐싱...?
+  - [x] 캐싱...?
   - [x] TS 데코레이터 기반 이벤트...??
 
 ## Installation
