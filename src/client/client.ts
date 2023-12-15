@@ -35,8 +35,11 @@ export class PEWSClient {
 
   // Earthqukae info
   private eqkInfo?: EarthquakeInfo
-  private readonly cachedEqkInfo?: EarthquakeInfo
   private gridArr: number[] = []
+
+  // Caching
+  private _cachedPhase2Info?: EarthquakeInfo
+  private _cachedPhase3Info?: EarthquakeInfo
 
   constructor(wrapper: PEWS) {
     this.Wrapper = wrapper
@@ -226,6 +229,7 @@ export class PEWSClient {
     }
 
     const bitEqkData = binDataBits.slice(-75)
+    let needCaching = false
 
     switch (this.phase) {
       case 1:
@@ -238,13 +242,23 @@ export class PEWSClient {
       case 3:
         if (this._phase !== this._cachedPhase) {
           this.renewGrid = true
-
+          needCaching = true
           // TODO: eqkInfo 캐싱 도입 후,
           // 이전 event ID 와 다를 때에 renewGrid = true 처리 필요.
         }
-
         await this.eqkHandler(bitEqkData)
+
+        if (needCaching) {
+          switch (this.phase) {
+            case 2:
+              this._cachedPhase2Info = this.eqkInfo
+              break
+            case 3:
+              this._cachedPhase3Info = this.eqkInfo
+          }
+        }
         break
+
       case 4:
         if (this.eqkInfo != null) {
           this.eqkInfo.eqkID =
@@ -267,6 +281,37 @@ export class PEWSClient {
   }
 
   private async eqkHandler(eqkData: Uint8Array): Promise<void> {
+    // bit 69~94: eqkID
+    const eqkID =
+      (((eqkData[8] & 0b111) << 23) |
+        (eqkData[9] << 15) |
+        (eqkData[10] << 7) |
+        (eqkData[11] >> 1)) +
+      2000000000
+
+    // Check with cached data
+    switch (this.phase) {
+      case 2:
+        if (this._cachedPhase2Info?.eqkID === eqkID) {
+          this.eqkInfo = this._cachedPhase2Info
+          this.logger.debug(
+            "eqkHandler: eqkID hasn't changed, using cached data",
+          )
+          return
+        }
+        break
+
+      case 3:
+        if (this._cachedPhase3Info?.eqkID === eqkID) {
+          this.eqkInfo = this._cachedPhase3Info
+          this.logger.debug(
+            "eqkHandler: eqkID hasn't changed, using cached data",
+          )
+          return
+        }
+        break
+    }
+
     // bit 0~9: latitude
     const lat = 30 + ((eqkData[0] << 2) | (eqkData[1] >> 6)) / 100
 
@@ -287,14 +332,6 @@ export class PEWSClient {
         (eqkData[7] << 5) |
         (eqkData[8] >> 3)) *
       1000
-
-    // bit 69~94: eqkID
-    const eqkID =
-      (((eqkData[8] & 0b111) << 23) |
-        (eqkData[9] << 15) |
-        (eqkData[10] << 7) |
-        (eqkData[11] >> 1)) +
-      2000000000
 
     // bit 95~98: max intensity
     const maxIntensity = ((eqkData[11] & 0b1) << 3) | (eqkData[12] >> 5)
@@ -332,7 +369,6 @@ export class PEWSClient {
       dep,
       eqkID,
     }
-    console.log(this.eqkInfo)
 
     if ((this.phase === 2 || this.phase === 3) && this.renewGrid) {
       if (this.eqkInfo?.eqkID !== undefined) {
