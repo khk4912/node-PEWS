@@ -10,8 +10,14 @@ export default tseslint.config(
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
+      parserOptions: {
+        project: './tsconfig.json'
+      },
       ecmaVersion: 2020,
-      globals: globals.browser
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
     }
   }
 )
