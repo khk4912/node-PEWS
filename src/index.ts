@@ -1,3 +1,3 @@
-export function test (): string {
-  return 'Hello World'
-}
+import { PEWS } from './client/pews'
+
+export { PEWS }
