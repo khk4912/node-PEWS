@@ -1,17 +1,25 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
-import love from 'eslint-config-love'
+import neostandard from 'neostandard'
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  ...neostandard({
+    ignores: ['dist', 'runtime_test', '**/*.js'],
+    filesTs: ['**/*.{ts,tsx}'],
+    ts: true
+  }),
+  { ignores: ['dist', 'runtime_test', '**/*.js'] },
   {
-    ...love,
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommendedTypeChecked
+    ],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.json'
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname
       },
       ecmaVersion: 2020,
       globals: {
