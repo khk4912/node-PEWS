@@ -23,7 +23,7 @@ export class PEWS {
   protected async getStation (url?: string, callbackData?: ArrayBuffer): Promise<Station[]> {
     const data = await (await fetch(url ?? getRequestURL('s'))).arrayBuffer()
 
-    return await this._handleStationData(data)
+    return this._handleStationData(data)
   }
 
   /**
@@ -37,7 +37,7 @@ export class PEWS {
    *
    * @throws {Error} Station 정보가 99개 이하일 경우
    */
-  private async _handleStationData (data: ArrayBuffer): Promise<Station[]> {
+  private _handleStationData (data: ArrayBuffer): Station[] {
     let binaryStr = ''
 
     const byteArray = new Uint8Array(data)
