@@ -5,3 +5,7 @@ export interface Station {
   mmi: number
   name?: string
 }
+
+export interface MMIData {
+  mmiData: number[]
+}

@@ -1,8 +1,9 @@
-import type { Station } from '../types/model'
+import type { MMIData, Station } from '../types/model'
 import { getRequestURL } from './utils'
 
 export class PEWS {
   protected station: Station[] = []
+  public TIDE = 1000
 
   /**
    * Station 정보를 불러옵니다.
@@ -20,8 +21,10 @@ export class PEWS {
    * // 특정 URL로부터 Station 정보를 불러옵니다.
    * await PEWS.getStation('https://www.weather.go.kr/pews/data/20210914120000.s')
    */
-  protected async getStation (url?: string, callbackData?: ArrayBuffer): Promise<Station[]> {
-    const data = await (await fetch(url ?? getRequestURL('s'))).arrayBuffer()
+  public async getStation (url?: string, callbackData?: ArrayBuffer): Promise<Station[]> {
+    const data = await (await fetch(url ?? getRequestURL('s', this.TIDE))).arrayBuffer()
+
+    // TODO: Implement callbackData handling for MMI data
 
     return this._handleStationData(data)
   }
@@ -38,22 +41,45 @@ export class PEWS {
    * @throws {Error} Station 정보가 99개 이하일 경우
    */
   private _handleStationData (data: ArrayBuffer): Station[] {
-    let binaryStr = ''
-
     const byteArray = new Uint8Array(data)
-    byteArray.forEach(byte => {
-      binaryStr += byte.toString(2).padStart(8, '0')
-    })
 
-    const newStationArr: Station[] = []
+    let bitBuffer = 0
+    let bitsInBuffer = 0
+    let byteIndex = 0
 
-    let idx = 0
+    const readBits = (bitCount: number): number => {
+      while (bitsInBuffer < bitCount) {
+        if (byteIndex >= byteArray.length) {
+          throw new Error('Station 데이터 파싱 중 예기치 않은 EOF가 발생했습니다.')
+        }
 
-    for (let i = 0; i < binaryStr.length; i += 20) {
-      const lat = parseInt(binaryStr.slice(i, i + 10), 2) / 100
-      const lon = parseInt(binaryStr.slice(i + 10, i + 20), 2) / 100
+        bitBuffer = (bitBuffer << 8) | byteArray[byteIndex++]
+        bitsInBuffer += 8
+      }
 
-      newStationArr.push({ idx: idx++, lat, lon, mmi: 0 })
+      const shift = bitsInBuffer - bitCount
+      const mask = (1 << bitCount) - 1
+      const value = (bitBuffer >> shift) & mask
+
+      bitsInBuffer -= bitCount
+      bitBuffer &= bitsInBuffer > 0 ? (1 << bitsInBuffer) - 1 : 0
+
+      return value
+    }
+
+    const totalStations = Math.floor((byteArray.length * 8) / 20)
+    const newStationArr: Station[] = new Array(totalStations)
+
+    for (let idx = 0; idx < totalStations; idx++) {
+      const lat = (readBits(10) / 100) + 30
+      const lon = (readBits(10) / 100) + 120
+
+      // 울릉도, 태하 위경도 보정
+      if ((lat === 7.48 && lon === 0.89) || (lat === 7.51 && lon === 0.81)) {
+        newStationArr[idx] = { idx, lat, lon: (lon + 10), mmi: 0 }
+        continue
+      }
+      newStationArr[idx] = { idx, lat, lon, mmi: 0 }
     }
 
     if (newStationArr.length <= 99) {
@@ -62,5 +88,40 @@ export class PEWS {
 
     this.station = newStationArr
     return newStationArr
+  }
+
+  /**
+   * ArrayBuffer 데이터를 기반으로 Station의 MMI 정보를 업데이트합니다. (= fn_callback)
+   *
+   * @param data getMMI()로부터 받아온 ArrayBuffer 데이터
+   * @returns 업데이트된 Station 배열
+   */
+  protected updateMMI (data: ArrayBuffer): Station[] {
+    const mmiData = this._handleMMIData(data)
+
+    for (let i = 0; i < Math.min(this.station.length, mmiData.mmiData.length); i++) {
+      this.station[i].mmi = mmiData.mmiData[i]
+    }
+    return this.station
+  }
+
+  private _handleMMIData (data: ArrayBuffer): MMIData {
+    const byteArray = new Uint8Array(data)
+    const totalValues = byteArray.length * 2
+
+    if (totalValues === 0) {
+      return { mmiData: [] }
+    }
+
+    const mmiData = new Array<number>(totalValues)
+    let writeIndex = 0
+
+    for (let i = 0; i < byteArray.length; i++) {
+      const byte = byteArray[i]
+      mmiData[writeIndex++] = byte >> 4
+      mmiData[writeIndex++] = byte & 0x0f
+    }
+
+    return { mmiData }
   }
 }
