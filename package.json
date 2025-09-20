@@ -1,7 +1,9 @@
 {
   "name": "node-pews",
   "version": "0.1.0",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "khk4912",
   "type": "module",
   "license": "MIT",
@@ -13,9 +15,17 @@
     "globals": "^15.15.0",
     "neostandard": "^0.12.2",
     "rollup": "^4.52.0",
+    "rollup-plugin-dts": "^6.1.1",
     "tslib": "^2.8.1",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
   "scripts": {
     "build": "rollup -c --configPlugin typescript",
