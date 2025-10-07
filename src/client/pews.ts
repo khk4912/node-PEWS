@@ -83,8 +83,8 @@ export class PEWS {
     const newStationArr: Station[] = new Array(totalStations)
 
     for (let idx = 0; idx < totalStations; idx++) {
-      const lat = (readBits(10) / 100) + 30
-      const lon = (readBits(10) / 100) + 120
+      const lat = Math.round(((readBits(10) / 100) + 30) * 100) / 100
+      const lon = Math.round(((readBits(10) / 100) + 120) * 100) / 100
 
       // 울릉도, 태하 위경도 보정
       if ((lat === 37.48 && lon === 120.89) || (lat === 37.51 && lon === 120.81)) {
