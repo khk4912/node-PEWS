@@ -1,6 +1,8 @@
 import { defineConfig } from 'rollup'
 import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
+import json from '@rollup/plugin-json'
+import terser from '@rollup/plugin-terser'
 
 const tsPlugin = typescript({
   tsconfig: './tsconfig.json',
@@ -29,7 +31,7 @@ export default defineConfig([
         exports: 'named'
       }
     ],
-    plugins: [tsPlugin]
+    plugins: [tsPlugin, json(), terser()]
   },
   {
     input: 'dist/types/index.d.ts',

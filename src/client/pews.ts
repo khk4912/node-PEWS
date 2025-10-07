@@ -1,9 +1,20 @@
+import { getStationInfo } from '../constant'
 import type { MMIData, Station } from '../types/model'
 import { getRequestURL } from './utils'
 
 export class PEWS {
-  protected station: Station[] = []
+  public stations: Station[] = []
   public TIDE = 1000
+
+  public async start (): Promise<void> {
+    await this.getStation()
+    await this.getMMI()
+
+    while (true) {
+      await this.getMMI()
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
+  }
 
   /**
    * Station 정보를 불러옵니다.
@@ -13,7 +24,7 @@ export class PEWS {
    * @param {ArrayBuffer} callbackData MMI 데이터를 즉시 반영하기 위한 getMMI 에서 얻은 ArrayBuffer 데이터 (optional)
    *
    *
-   * @returns {Station[]} 서버에서 받아온 Station 데이터
+   * @returns {Promise<Station[]>} 서버에서 받아온 Station 데이터
    * @example
    * // 현재 시각 기준으로 Station 정보를 불러옵니다.
    * await PEWS.getStation()
@@ -24,9 +35,10 @@ export class PEWS {
   public async getStation (url?: string, callbackData?: ArrayBuffer): Promise<Station[]> {
     const data = await (await fetch(url ?? getRequestURL('s', this.TIDE))).arrayBuffer()
 
-    // TODO: Implement callbackData handling for MMI data
+    this._handleStationData(data)
+    if (callbackData) { this.updateMMI(callbackData) }
 
-    return this._handleStationData(data)
+    return this.stations
   }
 
   /**
@@ -75,34 +87,46 @@ export class PEWS {
       const lon = (readBits(10) / 100) + 120
 
       // 울릉도, 태하 위경도 보정
-      if ((lat === 7.48 && lon === 0.89) || (lat === 7.51 && lon === 0.81)) {
-        newStationArr[idx] = { idx, lat, lon: (lon + 10), mmi: 0 }
+      if ((lat === 37.48 && lon === 120.89) || (lat === 37.51 && lon === 120.81)) {
+        const info = getStationInfo(lat, lon + 10)
+        newStationArr[idx] = { idx, lat, lon: lon + 10, mmi: 0, info }
         continue
       }
-      newStationArr[idx] = { idx, lat, lon, mmi: 0 }
+
+      const info = getStationInfo(lat, lon)
+      newStationArr[idx] = { idx, lat, lon, mmi: 0, info }
     }
 
     if (newStationArr.length <= 99) {
       throw new Error('Station 정보를 불러오는 데 실패한 것 같습니다. Station 데이터가 99개 이하입니다.')
     }
 
-    this.station = newStationArr
+    this.stations = newStationArr
     return newStationArr
   }
 
   /**
+   * MMI 정보를 불러오고 업데이트합니다.
+   * @param url 요청할 URL (optional, undefined일 경우 현재 시각 기준 요청)
+   * @returns {Promise<Station[]>} 업데이트된 Station 배열
+   */
+  public async getMMI (url?: string): Promise<Station[]> {
+    const data = await (await fetch(url ?? getRequestURL('b', this.TIDE))).arrayBuffer()
+    return this.updateMMI(data)
+  }
+
+  /**
    * ArrayBuffer 데이터를 기반으로 Station의 MMI 정보를 업데이트합니다. (= fn_callback)
-   *
    * @param data getMMI()로부터 받아온 ArrayBuffer 데이터
    * @returns 업데이트된 Station 배열
    */
   protected updateMMI (data: ArrayBuffer): Station[] {
     const mmiData = this._handleMMIData(data)
 
-    for (let i = 0; i < Math.min(this.station.length, mmiData.mmiData.length); i++) {
-      this.station[i].mmi = mmiData.mmiData[i]
+    for (let i = 0; i < Math.min(this.stations.length, mmiData.mmiData.length); i++) {
+      this.stations[i].mmi = mmiData.mmiData[i]
     }
-    return this.station
+    return this.stations
   }
 
   private _handleMMIData (data: ArrayBuffer): MMIData {
